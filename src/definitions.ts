@@ -1,5 +1,5 @@
 export interface CapacitorKakaoPlugin {
-  initializeKakao(options: { appKey: string }): Promise<{ value: string }>;
+  initializeKakao(options: { appKey: string; webKey: string; }): Promise<{ value: string }>;
   kakaoLogin(): Promise<{ value: string }>;
   kakaoLogout(): Promise<{ value: string }>;
   kakaoUnlink(): Promise<{ value: string }>;

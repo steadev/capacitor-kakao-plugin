@@ -13,22 +13,74 @@ npx cap sync
 
 <docgen-index>
 
-* [`echo(...)`](#echo)
+* [`initializeKakao(...)`](#initializekakao)
+* [`kakaoLogin()`](#kakaologin)
+* [`kakaoLogout()`](#kakaologout)
+* [`kakaoUnlink()`](#kakaounlink)
+* [`sendLinkFeed(...)`](#sendlinkfeed)
 
 </docgen-index>
 
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
 
-### echo(...)
+### initializeKakao(...)
 
 ```typescript
-echo(options: { value: string; }) => any
+initializeKakao(options: { appKey: string; webKey: string; }) => any
 ```
 
-| Param         | Type                            |
-| ------------- | ------------------------------- |
-| **`options`** | <code>{ value: string; }</code> |
+| Param         | Type                                             |
+| ------------- | ------------------------------------------------ |
+| **`options`** | <code>{ appKey: string; webKey: string; }</code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### kakaoLogin()
+
+```typescript
+kakaoLogin() => any
+```
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### kakaoLogout()
+
+```typescript
+kakaoLogout() => any
+```
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### kakaoUnlink()
+
+```typescript
+kakaoUnlink() => any
+```
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### sendLinkFeed(...)
+
+```typescript
+sendLinkFeed(options: { title: string; description: string; imageUrl: string; imageLinkUrl: string; buttonTitle: string; }) => any
+```
+
+| Param         | Type                                                                                                              |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ title: string; description: string; imageUrl: string; imageLinkUrl: string; buttonTitle: string; }</code> |
 
 **Returns:** <code>any</code>
 
