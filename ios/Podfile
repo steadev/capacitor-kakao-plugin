@@ -5,6 +5,14 @@ def capacitor_pods
   use_frameworks!
   pod 'Capacitor', :path => '../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../node_modules/@capacitor/ios'
+  # 카카오 모듈 추가
+  pod 'KakaoSDKCommon'  # 필수 요소를 담은 공통 모듈
+  pod 'KakaoSDKAuth'  # 사용자 인증
+  pod 'KakaoSDKUser'  # 카카오 로그인, 사용자 관리
+  pod 'KakaoSDKTalk'  # 친구, 메시지(카카오톡)
+  pod 'KakaoSDKStory'  # 카카오스토리 
+  pod 'KakaoSDKLink'  # 메시지(카카오링크)
+  pod 'KakaoSDKTemplate'  # 메시지 템플릿 
 end
 
 target 'Plugin' do

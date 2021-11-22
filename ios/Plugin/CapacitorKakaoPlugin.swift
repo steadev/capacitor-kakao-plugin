@@ -9,10 +9,36 @@ import Capacitor
 public class CapacitorKakaoPlugin: CAPPlugin {
     private let implementation = CapacitorKakao()
 
-    @objc func echo(_ call: CAPPluginCall) {
-        let value = call.getString("value") ?? ""
+    //네이티브는 app delegate에서 초기화함
+    @objc func initializeKakao(_ call: CAPPluginCall) {
         call.resolve([
-            "value": implementation.echo(value)
+            "value": "done"
         ])
+    }
+    
+    @objc func kakaoLogin(_ call: CAPPluginCall) {
+        
+        DispatchQueue.main.async {
+            self.implementation.kakaoLogin(call)
+        }
+    }
+    
+    @objc func kakaoLogout(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            self.implementation.kakaoLogout(call)
+        }
+        
+    }
+    
+    @objc func kakaoUnlink(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            self.implementation.kakaoUnlink(call)
+        }
+    }
+    
+    @objc func sendLinkFeed(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            self.implementation.sendLinkFeed(call)
+        }
     }
 }
