@@ -6,6 +6,7 @@ import KakaoSDKCommon
 import KakaoSDKLink
 import KakaoSDKTemplate
 
+
 @objc public class CapacitorKakao: NSObject {
     @objc public func kakaoLogin(_ call: CAPPluginCall) -> Void {
         
@@ -13,15 +14,13 @@ import KakaoSDKTemplate
         if (UserApi.isKakaoTalkLoginAvailable()) {
             UserApi.shared.loginWithKakaoTalk {(oauthToken, error) in
                 if let error = error {
-                    print(error)
                     call.reject("error")
                 }
                 else {
-
                     call.resolve([
                         "value": oauthToken?.accessToken ?? ""
                     ])
-                    
+
                 }
             }
         }
@@ -33,7 +32,6 @@ import KakaoSDKTemplate
                         call.reject("error")
                     }
                     else {
-
                         call.resolve([
                             "value": oauthToken?.accessToken ?? ""
                         ])
