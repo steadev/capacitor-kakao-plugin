@@ -45,6 +45,7 @@ repositories {
     google()
     jcenter()
     mavenCentral()
+    maven { url 'https://devrepo.kakao.com/nexus/content/groups/public/' }
 }
 
 
@@ -53,6 +54,11 @@ dependencies {
     implementation project(':capacitor-android')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     testImplementation "junit:junit:$junitVersion"
+
+    //  카카오 sdk
+    implementation "com.kakao.sdk:v2-user:2.5.2"
+    implementation "com.kakao.sdk:v2-link:2.5.2"
+
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
 }

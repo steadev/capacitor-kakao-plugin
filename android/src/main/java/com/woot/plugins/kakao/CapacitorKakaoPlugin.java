@@ -9,10 +9,10 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.kakao.sdk.common.KakaoSdk;
 
-@CapacitorPlugin(name = "CapacitorKakaoPlugin")
+@CapacitorPlugin(name = "CapacitorKakao")
 public class CapacitorKakaoPlugin extends Plugin {
 
-    private CapacitorKakaoPlugin implementation;
+    private CapacitorKakao implementation;
 
     //SDK 초기화
     public static void initKakaoSdk(Context context, String key) {
