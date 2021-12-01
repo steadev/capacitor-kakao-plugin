@@ -10,4 +10,11 @@ export interface CapacitorKakaoPlugin {
     imageLinkUrl: string;
     buttonTitle: string;
   }): Promise<{ value: string }>;
+  getUserInfo(): Promise<{ value: any }>;
+  getFriendList(options: {
+    offset?: number;
+    limit?: number;
+    order?: 'asc' | 'desc',
+    friendOrder?: 'FAVORITE' | 'NICKNAME'
+  }): Promise<{ value: any }>;
 }

@@ -107,4 +107,16 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
       });
     });
   }
+
+  async getUserInfo(): Promise<{ value: any }> {
+    return { value: null };
+  }
+  async getFriendList(options: {
+    offset?: number;
+    limit?: number;
+    order?: 'asc' | 'desc',
+    friendOrder?: 'FAVORITE' | 'NICKNAME'
+  }): Promise<{ value: any }> {
+    return { value: [] };
+  }
 }
