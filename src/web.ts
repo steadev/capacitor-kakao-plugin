@@ -117,6 +117,9 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
     order?: 'asc' | 'desc',
     friendOrder?: 'FAVORITE' | 'NICKNAME'
   }): Promise<{ value: any }> {
+    if (options) {
+      // do something
+    }
     return { value: [] };
   }
 }
