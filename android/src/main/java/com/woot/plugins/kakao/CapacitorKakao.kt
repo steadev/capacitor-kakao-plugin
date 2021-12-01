@@ -2,6 +2,7 @@ package com.woot.plugins.kakao
 
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 import com.kakao.sdk.user.UserApiClient
@@ -13,6 +14,9 @@ import com.kakao.sdk.template.model.Button
 import com.kakao.sdk.template.model.Content
 import com.kakao.sdk.template.model.Link
 import java.util.ArrayList
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.kakao.sdk.talk.TalkApiClient
 
 class CapacitorKakao(var activity: AppCompatActivity) {
     fun kakaoLogin(call: PluginCall) {
@@ -76,10 +80,10 @@ class CapacitorKakao(var activity: AppCompatActivity) {
     }
 
     fun sendLinkFeed(call: PluginCall) {
-        val link = Link(call.getString("image_link_url"), call.getString("image_link_url"), null, null)
-        val content = Content(call.getString("title")!!, call.getString("image_url")!!, link, call.getString("description"))
+        val link = Link(call.getString("imageLinkUrl"), call.getString("imageLinkUrl"), null, null)
+        val content = Content(call.getString("title")!!, call.getString("imageUrl")!!, link, call.getString("description"))
         val buttons = ArrayList<Button>()
-        buttons.add(Button(call.getString("button_title")!!, link))
+        buttons.add(Button(call.getString("buttonTitle")!!, link))
         val feed = FeedTemplate(content, null, buttons)
         LinkClient.instance
                 .defaultTemplate(
@@ -87,6 +91,7 @@ class CapacitorKakao(var activity: AppCompatActivity) {
                         feed
                 ) { linkResult: LinkResult?, error: Throwable? ->
                     if (error != null) {
+                        call.reject("kakao link failed: " + error.toString())
                     } else if (linkResult != null) {
                         activity.startActivity(linkResult.intent)
                     }
@@ -95,6 +100,53 @@ class CapacitorKakao(var activity: AppCompatActivity) {
                     call.resolve(ret)
                     null
                 }
+    }
+
+    fun getUserInfo(call: PluginCall) {
+        val gson = Gson()
+        // 사용자 정보 요청 (기본)
+        UserApiClient.instance.me { user, error ->
+            if (error != null) {
+                Log.e(TAG, "사용자 정보 요청 실패", error)
+                call.reject(error.toString());
+            }
+            else if (user != null) {
+                Log.i(TAG, "사용자 정보 요청 성공" +
+                        "\n회원번호: ${user.id}" +
+                        "\n이메일: ${user.kakaoAccount?.email}" +
+                        "\n닉네임: ${user.kakaoAccount?.profile?.nickname}" +
+                        "\n프로필사진: ${user.kakaoAccount?.profile?.thumbnailImageUrl}")
+                val ret = JSObject()
+                Log.i(TAG, "사용자 정보 object " + user.toString())
+                ret.put("value", gson.toJsonTree(user))
+
+                call.resolve(ret)
+            }
+        }
+    }
+
+    fun getFriendList(call: PluginCall) {
+        val gson = Gson()
+        // 카카오톡 친구 목록 가져오기 (기본)
+        TalkApiClient.instance.friends { friends, error ->
+            if (error != null) {
+                Log.e(TAG, "카카오톡 친구 목록 가져오기 실패", error)
+                call.reject("카카오톡 친구 목록 가져오기 실패 : " + error.toString())
+            }
+            else if (friends != null) {
+                Log.i(TAG, "카카오톡 친구 목록 가져오기 성공 \n${friends.elements?.joinToString("\n")}")
+                val friendList = ArrayList<JsonElement>()
+                if (friends.elements != null) {
+                    for (friend in friends.elements!!) {
+                        friendList.add(gson.toJsonTree(friend))
+                    }
+                }
+
+                val ret = JSObject()
+                ret.put("value", friendList)
+                call.resolve(ret);
+            }
+        }
     }
 
     companion object {

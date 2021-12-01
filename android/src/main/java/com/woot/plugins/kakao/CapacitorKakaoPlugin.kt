@@ -10,7 +10,7 @@ import com.getcapacitor.PluginCall
 
 @CapacitorPlugin(name = "CapacitorKakao")
 class CapacitorKakaoPlugin : Plugin() {
-    private var implementation: CapacitorKakao? = null
+    private lateinit var implementation: CapacitorKakao
     override fun load() {
         super.load()
         implementation = CapacitorKakao(activity)
@@ -24,23 +24,33 @@ class CapacitorKakaoPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun kakaoLogin(call: PluginCall?) {
-        implementation!!.kakaoLogin(call!!)
+    fun kakaoLogin(call: PluginCall) {
+        implementation.kakaoLogin(call)
     }
 
     @PluginMethod
-    fun kakaoLogout(call: PluginCall?) {
-        implementation!!.kakaoLogout(call!!)
+    fun kakaoLogout(call: PluginCall) {
+        implementation.kakaoLogout(call)
     }
 
     @PluginMethod
-    fun kakaoUnlink(call: PluginCall?) {
-        implementation!!.kakaoUnlink(call!!)
+    fun kakaoUnlink(call: PluginCall) {
+        implementation.kakaoUnlink(call)
     }
 
     @PluginMethod
-    fun sendLinkFeed(call: PluginCall?) {
-        implementation!!.sendLinkFeed(call!!)
+    fun sendLinkFeed(call: PluginCall) {
+        implementation.sendLinkFeed(call)
+    }
+
+    @PluginMethod
+    fun getUserInfo(call: PluginCall) {
+        implementation.getUserInfo(call)
+    }
+
+    @PluginMethod
+    fun getFriendList(call: PluginCall) {
+        implementation.getFriendList(call)
     }
 
     companion object {
