@@ -15,46 +15,106 @@ import com.kakao.sdk.template.model.Link;
 import com.kakao.sdk.user.UserApiClient;
 import java.util.ArrayList;
 
-@CapacitorPlugin(name = "CapacitorKakao")
-public class CapacitorKakaoPlugin extends Plugin {
+public class CapacitorKakao {
 
-    private CapacitorKakao implementation;
+    private static final String TAG = "CapacitorKakao";
+    AppCompatActivity activity;
 
-    //SDK 초기화
-    public static void initKakaoSdk(Context context, String key) {
-        KakaoSdk.init(context, key);
+    public CapacitorKakao(AppCompatActivity activity) {
+        this.activity = activity;
     }
 
-    @Override
-    public void load() {
-        super.load();
-        implementation = new CapacitorKakao(getActivity());
-    }
-
-    @PluginMethod
-    public void initializeKakao(PluginCall call) {
-        JSObject ret = new JSObject();
-        ret.put("value", "done");
-        call.resolve(ret);
-    }
-
-    @PluginMethod
     public void kakaoLogin(PluginCall call) {
-        implementation.kakaoLogin(call);
+        if (UserApiClient.getInstance().isKakaoTalkLoginAvailable(this.activity)) {
+            UserApiClient
+                .getInstance()
+                .loginWithKakaoTalk(
+                    this.activity,
+                    (oAuthToken, error) -> {
+                        if (error != null) {
+                            Log.e(TAG, "login fail : ", error);
+                            call.reject(error.toString());
+                        } else if (oAuthToken != null) {
+                            Log.i(TAG, "login success : " + oAuthToken.getAccessToken());
+                            JSObject ret = new JSObject();
+                            ret.put("value", oAuthToken.getAccessToken());
+                            call.resolve(ret);
+                        } else {
+                            call.reject("no_data");
+                        }
+                        return null;
+                    }
+                );
+        } else {
+            UserApiClient
+                .getInstance()
+                .loginWithKakaoAccount(
+                    this.activity,
+                    (oAuthToken, error) -> {
+                        if (error != null) {
+                            Log.e(TAG, "login fail : ", error);
+                            call.reject(error.toString());
+                        } else if (oAuthToken != null) {
+                            Log.i(TAG, "login success : " + oAuthToken.getAccessToken());
+                            JSObject ret = new JSObject();
+                            ret.put("value", oAuthToken.getAccessToken());
+                            call.resolve(ret);
+                        } else {
+                            call.reject("no_data");
+                        }
+                        return null;
+                    }
+                );
+        }
     }
 
-    @PluginMethod
     public void kakaoLogout(PluginCall call) {
-        implementation.kakaoLogout(call);
+        UserApiClient
+            .getInstance()
+            .logout(
+                error -> {
+                    JSObject ret = new JSObject();
+                    ret.put("value", "done");
+                    call.resolve(ret);
+                    return null;
+                }
+            );
     }
 
-    @PluginMethod
     public void kakaoUnlink(PluginCall call) {
-        implementation.kakaoUnlink(call);
+        UserApiClient
+            .getInstance()
+            .unlink(
+                error -> {
+                    JSObject ret = new JSObject();
+                    ret.put("value", "done");
+                    call.resolve(ret);
+                    return null;
+                }
+            );
     }
 
-    @PluginMethod
     public void sendLinkFeed(PluginCall call) {
-        implementation.sendLinkFeed(call);
+        Link link = new Link(call.getString("image_link_url"), call.getString("image_link_url"), null, null);
+        Content content = new Content(call.getString("title"), call.getString("image_url"), link, call.getString("description"));
+        ArrayList<Button> buttons = new ArrayList<>();
+        buttons.add(new Button(call.getString("button_title"), link));
+        FeedTemplate feed = new FeedTemplate(content, null, buttons);
+        LinkClient
+            .getInstance()
+            .defaultTemplate(
+                this.activity,
+                feed,
+                (linkResult, error) -> {
+                    if (error != null) {} else if (linkResult != null) {
+                        this.activity.startActivity(linkResult.getIntent());
+                    }
+
+                    JSObject ret = new JSObject();
+                    ret.put("value", "done");
+                    call.resolve(ret);
+                    return null;
+                }
+            );
     }
 }
