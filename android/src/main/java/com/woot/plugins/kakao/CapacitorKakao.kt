@@ -16,67 +16,74 @@ import com.kakao.sdk.template.model.Link
 import java.util.ArrayList
 import com.google.gson.Gson
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.reflect.TypeToken
 import com.kakao.sdk.talk.TalkApiClient
+import com.kakao.sdk.talk.model.FriendOrder
+import com.kakao.sdk.talk.model.Order
+import org.json.JSONArray
+
+val gson = Gson()
 
 class CapacitorKakao(var activity: AppCompatActivity) {
     fun kakaoLogin(call: PluginCall) {
         if (UserApiClient.instance.isKakaoTalkLoginAvailable(activity)) {
             UserApiClient.instance
-                    .loginWithKakaoTalk(
-                            activity
-                    ) { oAuthToken: OAuthToken?, error: Throwable? ->
-                        if (error != null) {
-                            Log.e(TAG, "login fail : ", error)
-                            call.reject(error.toString())
-                        } else if (oAuthToken != null) {
-                            Log.i(TAG, "login success : " + oAuthToken.accessToken)
-                            val ret = JSObject()
-                            ret.put("value", oAuthToken.accessToken)
-                            call.resolve(ret)
-                        } else {
-                            call.reject("no_data")
-                        }
-                        null
+                .loginWithKakaoTalk(
+                        activity
+                ) { oAuthToken: OAuthToken?, error: Throwable? ->
+                    if (error != null) {
+                        Log.e(TAG, "login fail : ", error)
+                        call.reject(error.toString())
+                    } else if (oAuthToken != null) {
+                        Log.i(TAG, "login success : " + oAuthToken.accessToken)
+                        val ret = JSObject()
+                        ret.put("value", oAuthToken.accessToken)
+                        call.resolve(ret)
+                    } else {
+                        call.reject("no_data")
                     }
+                    null
+                }
         } else {
             UserApiClient.instance
-                    .loginWithKakaoAccount(
-                            activity
-                    ) { oAuthToken: OAuthToken?, error: Throwable? ->
-                        if (error != null) {
-                            Log.e(TAG, "login fail : ", error)
-                            call.reject(error.toString())
-                        } else if (oAuthToken != null) {
-                            Log.i(TAG, "login success : " + oAuthToken.accessToken)
-                            val ret = JSObject()
-                            ret.put("value", oAuthToken.accessToken)
-                            call.resolve(ret)
-                        } else {
-                            call.reject("no_data")
-                        }
-                        null
+                .loginWithKakaoAccount(
+                        activity
+                ) { oAuthToken: OAuthToken?, error: Throwable? ->
+                    if (error != null) {
+                        Log.e(TAG, "login fail : ", error)
+                        call.reject(error.toString())
+                    } else if (oAuthToken != null) {
+                        Log.i(TAG, "login success : " + oAuthToken.accessToken)
+                        val ret = JSObject()
+                        ret.put("value", oAuthToken.accessToken)
+                        call.resolve(ret)
+                    } else {
+                        call.reject("no_data")
                     }
+                    null
+                }
         }
     }
 
     fun kakaoLogout(call: PluginCall) {
         UserApiClient.instance
-                .logout { error: Throwable? ->
-                    val ret = JSObject()
-                    ret.put("value", "done")
-                    call.resolve(ret)
-                    null
-                }
+            .logout { error: Throwable? ->
+                val ret = JSObject()
+                ret.put("value", "done")
+                call.resolve(ret)
+                null
+            }
     }
 
     fun kakaoUnlink(call: PluginCall) {
         UserApiClient.instance
-                .unlink { error: Throwable? ->
-                    val ret = JSObject()
-                    ret.put("value", "done")
-                    call.resolve(ret)
-                    null
-                }
+            .unlink { error: Throwable? ->
+                val ret = JSObject()
+                ret.put("value", "done")
+                call.resolve(ret)
+                null
+            }
     }
 
     fun sendLinkFeed(call: PluginCall) {
@@ -86,24 +93,23 @@ class CapacitorKakao(var activity: AppCompatActivity) {
         buttons.add(Button(call.getString("buttonTitle")!!, link))
         val feed = FeedTemplate(content, null, buttons)
         LinkClient.instance
-                .defaultTemplate(
-                        activity,
-                        feed
-                ) { linkResult: LinkResult?, error: Throwable? ->
-                    if (error != null) {
-                        call.reject("kakao link failed: " + error.toString())
-                    } else if (linkResult != null) {
-                        activity.startActivity(linkResult.intent)
-                    }
-                    val ret = JSObject()
-                    ret.put("value", "done")
-                    call.resolve(ret)
-                    null
+            .defaultTemplate(
+                    activity,
+                    feed
+            ) { linkResult: LinkResult?, error: Throwable? ->
+                if (error != null) {
+                    call.reject("kakao link failed: " + error.toString())
+                } else if (linkResult != null) {
+                    activity.startActivity(linkResult.intent)
                 }
+                val ret = JSObject()
+                ret.put("value", "done")
+                call.resolve(ret)
+                null
+            }
     }
 
     fun getUserInfo(call: PluginCall) {
-        val gson = Gson()
         // 사용자 정보 요청 (기본)
         UserApiClient.instance.me { user, error ->
             if (error != null) {
@@ -116,17 +122,15 @@ class CapacitorKakao(var activity: AppCompatActivity) {
                         "\n이메일: ${user.kakaoAccount?.email}" +
                         "\n닉네임: ${user.kakaoAccount?.profile?.nickname}" +
                         "\n프로필사진: ${user.kakaoAccount?.profile?.thumbnailImageUrl}")
+                val userJsonData = JSObject(gson.toJson(user).toString())
                 val ret = JSObject()
-                Log.i(TAG, "사용자 정보 object " + user.toString())
-                ret.put("value", gson.toJsonTree(user))
-
+                ret.put("value", userJsonData)
                 call.resolve(ret)
             }
         }
     }
 
     fun getFriendList(call: PluginCall) {
-        val gson = Gson()
         // 카카오톡 친구 목록 가져오기 (기본)
         TalkApiClient.instance.friends { friends, error ->
             if (error != null) {
@@ -135,15 +139,15 @@ class CapacitorKakao(var activity: AppCompatActivity) {
             }
             else if (friends != null) {
                 Log.i(TAG, "카카오톡 친구 목록 가져오기 성공 \n${friends.elements?.joinToString("\n")}")
-                val friendList = ArrayList<JsonElement>()
+                val friendList = ArrayList<JSObject>()
                 if (friends.elements != null) {
                     for (friend in friends.elements!!) {
-                        friendList.add(gson.toJsonTree(friend))
+                        friendList.add(JSObject(gson.toJson(friend).toString()))
                     }
                 }
-
+                val jsonArray = JSONArray(friendList)
                 val ret = JSObject()
-                ret.put("value", friendList)
+                ret.put("value", jsonArray)
                 call.resolve(ret);
             }
         }
