@@ -5,7 +5,17 @@ import KakaoSDKUser
 import KakaoSDKCommon
 import KakaoSDKLink
 import KakaoSDKTemplate
+import KakaoSDKAuth
+import KakaoSDKTalk
 
+extension Encodable {
+    
+    var toDictionary : [String: Any]? {
+        guard let object = try? JSONEncoder().encode(self) else { return nil }
+        guard let dictionary = try? JSONSerialization.jsonObject(with: object, options: []) as? [String:Any] else { return nil }
+        return dictionary
+    }
+}
 
 @objc public class CapacitorKakao: NSObject {
     @objc public func kakaoLogin(_ call: CAPPluginCall) -> Void {
@@ -79,9 +89,9 @@ import KakaoSDKTemplate
 
         let title = call.getString("title") ?? ""
         let description = call.getString("description") ?? ""
-        let image_url = call.getString("image_url") ?? ""
-        let image_link_url = call.getString("image_link_url") ?? ""
-        let button_title = call.getString("button_title") ?? ""
+        let image_url = call.getString("imageUrl") ?? ""
+        let image_link_url = call.getString("imageLinkUrl") ?? ""
+        let button_title = call.getString("buttonTitle") ?? ""
 
         
         
@@ -89,7 +99,6 @@ import KakaoSDKTemplate
                         mobileWebUrl: URL(string:image_link_url))
 
         let button = Button(title: button_title, link: link)
-       
         let content = Content(title: title,
                                 imageUrl: URL(string:image_url)!,
                                 description: description,
@@ -121,32 +130,33 @@ import KakaoSDKTemplate
         }
     }
 
-    @objc public func getUserInfo(_ call: CAPPluginCall) -> {
+    @objc public func getUserInfo(_ call: CAPPluginCall) -> Void {
         UserApi.shared.me() {(user, error) in
-        if let error = error {
-            print(error)
-            call.reject("me() failed.")
+            if let error = error {
+                print(error)
+                call.reject("me() failed.")
+            }
+            else {
+                print("me() success.")
+                call.resolve([
+                    "value": user?.toDictionary as Any
+                ])
+            }
         }
-        else {
-            print("me() success.")
-            
-            call.resolve([
-                "value": user as Any
-            ])
-        }
-    }
     }
 
-    @objc public func getFriendList(_ call: CAPPluginCall) -> {
+    @objc public func getFriendList(_ call: CAPPluginCall) -> Void {
         TalkApi.shared.friends {(friends, error) in
             if let error = error {
                 print(error)
                 call.reject("getFriendList() failed.")
             }
             else {
+                print("getFriendList() success")
+                let friendList = friends?.toDictionary
                 call.resolve([
-                    "value": friends
-                ])   
+                    "value": (friendList != nil) ? friendList!["elements"] as Any : [] as Any
+                ])
             }
         }
     }
