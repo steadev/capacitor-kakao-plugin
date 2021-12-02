@@ -41,4 +41,15 @@ public class CapacitorKakaoPlugin: CAPPlugin {
             self.implementation.sendLinkFeed(call)
         }
     }
+
+    @objc func getUserInfo(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            self.implementation.getUserInfo(call)
+        }
+    }
+    @objc func getFriendList(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            self.implementation.getFriendList(call)
+        }
+    }
 }

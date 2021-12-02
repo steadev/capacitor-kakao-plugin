@@ -20,7 +20,6 @@ import KakaoSDKTemplate
                     call.resolve([
                         "value": oauthToken?.accessToken ?? ""
                     ])
-
                 }
             }
         }
@@ -118,6 +117,36 @@ import KakaoSDKTemplate
                         ])
                     }
                 }
+            }
+        }
+    }
+
+    @objc public func getUserInfo(_ call: CAPPluginCall) -> {
+        UserApi.shared.me() {(user, error) in
+        if let error = error {
+            print(error)
+            call.reject("me() failed.")
+        }
+        else {
+            print("me() success.")
+            
+            call.resolve([
+                "value": user as Any
+            ])
+        }
+    }
+    }
+
+    @objc public func getFriendList(_ call: CAPPluginCall) -> {
+        TalkApi.shared.friends {(friends, error) in
+            if let error = error {
+                print(error)
+                call.reject("getFriendList() failed.")
+            }
+            else {
+                call.resolve([
+                    "value": friends
+                ])   
             }
         }
     }
