@@ -1,3 +1,11 @@
+export interface KakaoScope {
+  agreed: boolean;
+  displayName: string;
+  id: string;
+  revocable: boolean;
+  type: string;
+  using: boolean;
+}
 export interface CapacitorKakaoPlugin {
   initializeKakao(options: { appKey: string; webKey: string; }): Promise<{ value: string }>;
   kakaoLogin(): Promise<{ value: string }>;
@@ -17,6 +25,6 @@ export interface CapacitorKakaoPlugin {
     order?: 'asc' | 'desc',
     friendOrder?: 'FAVORITE' | 'NICKNAME'
   }): Promise<{ value: any }>;
-  loginWithNewScopes(scopes?: string): Promise<void>;
-  getUserScopes(): Promise<{ value: string[] }>;
+  loginWithNewScopes(scopes?: string[]): Promise<void>;
+  getUserScopes(): Promise<{ value: KakaoScope[] }>;
 }

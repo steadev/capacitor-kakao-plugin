@@ -1,6 +1,8 @@
 import { WebPlugin } from '@capacitor/core';
 import * as Kakao from './assets/kakao-sdk';
-import type { CapacitorKakaoPlugin } from './definitions';
+import type { CapacitorKakaoPlugin, KakaoScope } from './definitions';
+
+const KakaoSdk: any = Kakao;
 
 export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin {
   webKey: any;
@@ -21,13 +23,13 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
       if (!this.webKey) {
         reject('kakao_sdk_not_initialzed');
       }
-      const KakaoSdk: any = Kakao;
       KakaoSdk.Auth.login({
-        success: function (authObj: any) {
-          let { access_token } = authObj;
+        success: (authObj: any) => {
+          const { access_token } = authObj;
+          this.setAccessToken(access_token);
           resolve({ value: access_token });
         },
-        fail: function (err: any) {
+        fail: (err: any) => {
           console.error(err);
           reject(err);
         },
@@ -42,7 +44,6 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
         reject('kakao_sdk_not_initialzed');
       }
 
-      const KakaoSdk: any = Kakao;
       KakaoSdk.Auth.logout();
       resolve({ value: 'done' });
     });
@@ -55,7 +56,6 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
         reject('kakao_sdk_not_initialzed');
       }
 
-      const KakaoSdk: any = Kakao;
       KakaoSdk.API.request({
         url: '/v1/user/unlink',
         success: function (response: any) {
@@ -82,7 +82,6 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
       if (!this.webKey) {
         reject('kakao_sdk_not_initialzed');
       }
-      const KakaoSdk: any = Kakao;
       KakaoSdk.Link.sendDefault({
         objectType: 'feed',
         content: {
@@ -109,7 +108,17 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
   }
 
   async getUserInfo(): Promise<{ value: any }> {
-    return { value: null };
+    return new Promise((resolve, reject) => {
+      KakaoSdk.API.request({
+        url: '/v2/user/me',
+        success: (result: any) => {
+          resolve({ value: result });
+        },
+        fail: (error: any) => {
+          reject(error);
+        }
+      });
+    })
   }
   async getFriendList(options?: {
     offset?: number;
@@ -117,20 +126,56 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
     order?: 'asc' | 'desc',
     friendOrder?: 'FAVORITE' | 'NICKNAME'
   }): Promise<{ value: any }> {
-    if (options) {
-      // do something
-    }
-    return { value: [] };
+    return new Promise((resolve, reject) => {
+      KakaoSdk.API.request({
+        url: '/v1/api/talk/friends',
+        data: options,
+        success: (result: any) => {
+          resolve({ value: result });
+        },
+        fail: (error: any) => {
+          reject(error);
+        }
+      });
+    })
   }
 
-  async loginWithNewScopes(scopes?: string): Promise<void> {
-    if (scopes) {
-      // do something
-    }
-    return;
+  async loginWithNewScopes(scopes?: string[]): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      if (!this.webKey) {
+        reject('kakao_sdk_not_initialzed');
+      }
+      KakaoSdk.Auth.login({
+        scope: scopes ? scopes.join(',') : undefined,
+        success: (authObj: any) => {
+          const { access_token } = authObj;
+          this.setAccessToken(access_token);
+          resolve();
+        },
+        fail: (err: any) => {
+          console.error(err);
+          reject(err);
+        },
+      });
+    });
   }
 
-  async getUserScopes(): Promise<{ value: string[]}> {
-    return { value: [] };
+  async getUserScopes(): Promise<{ value: KakaoScope[]}> {
+    return new Promise((resolve, reject) => {
+      KakaoSdk.API.request({
+        url: '/v2/user/scopes',
+        success: (result: any) => {
+          resolve({ value: result.scopes as KakaoScope[] });
+        },
+        fail: (error: any) => {
+          reject(error);
+        }
+      });
+    });
+  }
+
+  private setAccessToken(token: string): void {
+    const KakaoSdk: any = Kakao;
+    KakaoSdk.setAccessToken(token);
   }
 }
