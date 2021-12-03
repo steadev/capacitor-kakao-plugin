@@ -175,7 +175,6 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
   }
 
   private setAccessToken(token: string): void {
-    const KakaoSdk: any = Kakao;
-    KakaoSdk.setAccessToken(token);
+    KakaoSdk.Auth.setAccessToken(token);
   }
 }
