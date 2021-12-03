@@ -1,3 +1,10 @@
+export interface KakaoFriendOption {
+  offset?: number;
+  limit?: number;
+  order?: 'asc' | 'desc';
+  friendOrder?: 'FAVORITE' | 'NICKNAME';
+}
+
 export interface KakaoScope {
   agreed: boolean;
   displayName: string;
@@ -19,12 +26,7 @@ export interface CapacitorKakaoPlugin {
     buttonTitle: string;
   }): Promise<{ value: string }>;
   getUserInfo(): Promise<{ value: any }>;
-  getFriendList(options?: {
-    offset?: number;
-    limit?: number;
-    order?: 'asc' | 'desc',
-    friendOrder?: 'FAVORITE' | 'NICKNAME'
-  }): Promise<{ value: any }>;
+  getFriendList(options?: KakaoFriendOption): Promise<{ value: any }>;
   loginWithNewScopes(scopes?: string[]): Promise<void>;
   getUserScopes(): Promise<{ value: KakaoScope[] }>;
 }

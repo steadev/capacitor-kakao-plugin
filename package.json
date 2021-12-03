@@ -1,6 +1,6 @@
 {
   "name": "capacitor-kakao-plugin",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "capacitor kakao plugin",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -52,6 +52,7 @@
     "@ionic/prettier-config": "^1.0.1",
     "@ionic/swiftlint-config": "^1.1.2",
     "@types/lodash.camelcase": "^4.3.6",
+    "@types/lodash.snakecase": "^4.1.6",
     "eslint": "^7.11.0",
     "prettier": "~2.2.0",
     "prettier-plugin-java": "~1.0.0",
@@ -77,6 +78,7 @@
     }
   },
   "dependencies": {
-    "lodash.camelcase": "^4.3.0"
+    "lodash.camelcase": "^4.3.0",
+    "lodash.snakecase": "^4.1.1"
   }
 }
