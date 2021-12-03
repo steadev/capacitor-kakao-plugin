@@ -58,4 +58,10 @@ public class CapacitorKakaoPlugin: CAPPlugin {
             self.implementation.loginWithNewScopes(call)
         }
     }
+
+    @objc func getUserScopes(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            self.implementation.getUserScopes(call)
+        }
+    }
 }

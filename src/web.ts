@@ -129,4 +129,8 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
     }
     return;
   }
+
+  async getUserScopes(): Promise<{ value: string[]}> {
+    return { value: [] };
+  }
 }

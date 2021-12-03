@@ -58,6 +58,11 @@ class CapacitorKakaoPlugin : Plugin() {
         implementation.loginWithNewScopes(call)
     }
 
+    @PluginMethod
+    fun getUserScopes(call: PluginCall) {
+        implementation.getUserScopes(call)
+    }
+
     companion object {
         //SDK 초기화
         @JvmStatic

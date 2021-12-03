@@ -18,4 +18,5 @@ export interface CapacitorKakaoPlugin {
     friendOrder?: 'FAVORITE' | 'NICKNAME'
   }): Promise<{ value: any }>;
   loginWithNewScopes(scopes?: string): Promise<void>;
+  getUserScopes(): Promise<{ value: string[] }>;
 }

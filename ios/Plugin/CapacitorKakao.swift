@@ -162,63 +162,51 @@ extension Encodable {
     }
 
     @objc public func loginWithNewScopes(_ call: CAPPluginCall) ->  Void {
-        UserApi.shared.me() {(user, error) in
+        var scopes = [String]()
+        guard let tobeAgreedScopes = call.getArray("scopes", String.self) else {
+            call.reject("scopes failed")
+            return
+        }
+        for scope in tobeAgreedScopes {
+            scopes.append(scope)
+        }
+            
+        if scopes.count == 0  { return }
+
+        //필요한 scope으로 토큰갱신을 한다.
+        UserApi.shared.loginWithKakaoAccount(scopes: scopes) { (_, error) in
             if let error = error {
                 print(error)
             }
-            else {            
-                if let user = user {          
-                    //필요한 scope을 아래의 예제코드를 참고해서 추가한다.
-                    //아래 예제는 모든 스콥을 나열한것.
-                    var scopes = [String]()
+            else {
+                UserApi.shared.me() { (user, error) in
+                    if let error = error {
+                        print(error)
+                    }
+                    else {
+                        print("me() success.")
 
-                    if (user.kakaoAccount?.profileNeedsAgreement == true) { scopes.append("profile") }
-                    if (user.kakaoAccount?.emailNeedsAgreement == true) { scopes.append("account_email") }
-                    if (user.kakaoAccount?.birthdayNeedsAgreement == true) { scopes.append("birthday") }
-                    if (user.kakaoAccount?.birthyearNeedsAgreement == true) { scopes.append("birthyear") }
-                    if (user.kakaoAccount?.genderNeedsAgreement == true) { scopes.append("gender") }
-                    if (user.kakaoAccount?.phoneNumberNeedsAgreement == true) { scopes.append("phone_number") }
-                    if (user.kakaoAccount?.ageRangeNeedsAgreement == true) { scopes.append("age_range") }
-                    if (user.kakaoAccount?.ciNeedsAgreement == true) { scopes.append("account_ci") }
-                    
-                    if scopes.count == 0  { return }   
+                        //do something
+                        _ = user
+                    }
 
-                    //필요한 scope으로 토큰갱신을 한다.
-                    UserApi.shared.loginWithKakaoAccount(scopes: scopes) { (_, error) in
-                        if let error = error {
-                            print(error)
-                        }
-                        else {
-                            UserApi.shared.me() { (user, error) in
-                                if let error = error {
-                                    print(error)
-                                }
-                                else {
-                                    print("me() success.")
-
-                                    //do something
-                                    _ = user                                    
-                                }
-
-                            } //UserApi.shared.me()
-                        }
-
-                    } //UserApi.shared.loginWithKakaoAccount(scopes:)                           
-                }
+                } //UserApi.shared.me()
             }
+
         }
     }
 
-    @objc private func getUserScopes() -> Any {
+    @objc private func getUserScopes(_ call: CAPPluginCall) -> Any {
         UserApi.shared.scopes() { (scopeInfo, error) in
             if let error = error {
                 self?.errorHandler(error: error)
+                call.reject("get kakao user scope failed : ")
             }
             else {
                 self?.success(scopeInfo)
-                
-                //do something
-                return scopeInfo
+                call.resolve([
+                    "value": scopeInfo
+                ])
             }
         }
     }
