@@ -111,7 +111,7 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
   async getUserInfo(): Promise<{ value: any }> {
     return { value: null };
   }
-  async getFriendList(options: {
+  async getFriendList(options?: {
     offset?: number;
     limit?: number;
     order?: 'asc' | 'desc',
@@ -121,5 +121,12 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
       // do something
     }
     return { value: [] };
+  }
+
+  async loginWithNewScopes(scopes?: string): Promise<void> {
+    if (scopes) {
+      // do something
+    }
+    return;
   }
 }

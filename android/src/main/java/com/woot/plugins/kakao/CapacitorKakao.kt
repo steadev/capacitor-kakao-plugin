@@ -152,6 +152,59 @@ class CapacitorKakao(var activity: AppCompatActivity) {
             }
         }
     }
+    
+    fun loginWithNewScopes(call: PluginCall) {
+        UserApiClient.instance.me { user, error ->
+            if (error != null) {
+                Log.e(TAG, "사용자 정보 요청 실패", error)
+            }
+            else if (user != null) {
+                var scopes = mutableListOf<String>()
+
+                if (user.kakaoAccount?.emailNeedsAgreement == true) { scopes.add("account_email") }
+                if (user.kakaoAccount?.birthdayNeedsAgreement == true) { scopes.add("birthday") }
+                if (user.kakaoAccount?.birthyearNeedsAgreement == true) { scopes.add("birthyear") }
+                if (user.kakaoAccount?.genderNeedsAgreement == true) { scopes.add("gender") }
+                if (user.kakaoAccount?.phoneNumberNeedsAgreement == true) { scopes.add("phone_number") }
+                if (user.kakaoAccount?.profileNeedsAgreement == true) { scopes.add("profile") }
+                if (user.kakaoAccount?.ageRangeNeedsAgreement == true) { scopes.add("age_range") }
+                if (user.kakaoAccount?.ciNeedsAgreement == true) { scopes.add("account_ci") }
+
+                if (scopes.count() > 0) {
+                    Log.d(TAG, "사용자에게 추가 동의를 받아야 합니다.")
+
+                    UserApiClient.instance.loginWithNewScopes(context, scopes) { token, error ->
+                        if (error != null) {
+                            Log.e(TAG, "사용자 추가 동의 실패", error)
+                        } else {
+                            Log.d(TAG, "allowed scopes: ${token!!.scopes}")
+
+                            // 사용자 정보 재요청
+                            UserApiClient.instance.me { user, error ->
+                                if (error != null) {
+                                    Log.e(TAG, "사용자 정보 요청 실패", error)
+                                }
+                                else if (user != null) {
+                                    Log.i(TAG, "사용자 정보 요청 성공")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun getUserScopes() {
+        UserApiClient.instance.scopes { scopeInfo, error ->
+            if (error != null) {
+                Log.e(TAG, "동의 정보 확인 실패", error)
+            }else if (scopeInfo != null) {
+                Log.i(TAG, "동의 정보 확인 성공\n 현재 가지고 있는 동의 항목 $scopeInfo")
+                return scopeInfo
+            }
+        }
+    }
 
     companion object {
         private const val TAG = "CapacitorKakao"

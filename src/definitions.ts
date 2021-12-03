@@ -11,10 +11,11 @@ export interface CapacitorKakaoPlugin {
     buttonTitle: string;
   }): Promise<{ value: string }>;
   getUserInfo(): Promise<{ value: any }>;
-  getFriendList(options: {
+  getFriendList(options?: {
     offset?: number;
     limit?: number;
     order?: 'asc' | 'desc',
     friendOrder?: 'FAVORITE' | 'NICKNAME'
   }): Promise<{ value: any }>;
+  loginWithNewScopes(scopes?: string): Promise<void>;
 }

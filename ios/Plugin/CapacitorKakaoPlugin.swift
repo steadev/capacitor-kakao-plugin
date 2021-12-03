@@ -52,4 +52,10 @@ public class CapacitorKakaoPlugin: CAPPlugin {
             self.implementation.getFriendList(call)
         }
     }
+
+    @objc func loginWithNewScopes(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            self.implementation.loginWithNewScopes(call)
+        }
+    }
 }
