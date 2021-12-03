@@ -164,33 +164,26 @@ extension Encodable {
     @objc public func loginWithNewScopes(_ call: CAPPluginCall) ->  Void {
         var scopes = [String]()
         guard let tobeAgreedScopes = call.getArray("scopes", String.self) else {
-            call.reject("scopes failed")
+            call.reject("scopes agree failed")
             return
         }
         for scope in tobeAgreedScopes {
             scopes.append(scope)
         }
             
-        if scopes.count == 0  { return }
+        if scopes.count == 0  { 
+            call.resolve()
+            return 
+        }
 
         //필요한 scope으로 토큰갱신을 한다.
         UserApi.shared.loginWithKakaoAccount(scopes: scopes) { (_, error) in
             if let error = error {
                 print(error)
+                call.reject("scopes agree failed")
             }
             else {
-                UserApi.shared.me() { (user, error) in
-                    if let error = error {
-                        print(error)
-                    }
-                    else {
-                        print("me() success.")
-
-                        //do something
-                        _ = user
-                    }
-
-                } //UserApi.shared.me()
+                call.resolve()
             }
 
         }
@@ -198,14 +191,12 @@ extension Encodable {
 
     @objc private func getUserScopes(_ call: CAPPluginCall) -> Any {
         UserApi.shared.scopes() { (scopeInfo, error) in
-            if let error = error {
-                self?.errorHandler(error: error)
+            if error != nil {
                 call.reject("get kakao user scope failed : ")
             }
             else {
-                self?.success(scopeInfo)
                 call.resolve([
-                    "value": scopeInfo
+                    "value": scopeInfo as Any
                 ])
             }
         }

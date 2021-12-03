@@ -155,8 +155,8 @@ class CapacitorKakao(var activity: AppCompatActivity) {
     
     fun loginWithNewScopes(call: PluginCall) {
         var scopes = mutableListOf<String>()
-        val tobeAgreedScopes = call.getArray("scopes")
-        for (scope in tobeAgreedScopes.toList<String>()) {
+        val tobeAgreedScopes = call.getArray("scopes").toList<String>()
+        for (scope in tobeAgreedScopes) {
             scopes.add(scope)
         }
         if (scopes.count() > 0) {
@@ -165,20 +165,14 @@ class CapacitorKakao(var activity: AppCompatActivity) {
             UserApiClient.instance.loginWithNewScopes(activity, scopes) { token, error ->
                 if (error != null) {
                     Log.e(TAG, "사용자 추가 동의 실패", error)
+                    call.reject("scopes agree failed")
                 } else {
                     Log.d(TAG, "allowed scopes: ${token!!.scopes}")
-
-                    // 사용자 정보 재요청
-                    UserApiClient.instance.me { user, error ->
-                        if (error != null) {
-                            Log.e(TAG, "사용자 정보 요청 실패", error)
-                        }
-                        else if (user != null) {
-                            Log.i(TAG, "사용자 정보 요청 성공")
-                        }
-                    }
+                    call.resolve()
                 }
             }
+        } else {
+            call.resolve()
         }
     }
 
@@ -189,7 +183,12 @@ class CapacitorKakao(var activity: AppCompatActivity) {
                 call.reject("동의 정보 확인 실패" + error.toString())
             }else if (scopeInfo != null) {
                 Log.i(TAG, "동의 정보 확인 성공\n 현재 가지고 있는 동의 항목 $scopeInfo")
-                val scopeIdList = scopeInfo.scopes?.map { it.id }
+                val scopeIdList = JSArray()
+                if (scopeInfo.scopes != null) {
+                    for (scope in scopeInfo.scopes!!) {
+                        scopeIdList.put(scope.id)
+                    }
+                }
                 val ret = JSObject()
                 ret.put("value", scopeIdList)
                 call.resolve(ret);
