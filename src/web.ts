@@ -1,4 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
+import camelCase from 'lodash.camelcase';
 import * as Kakao from './assets/kakao-sdk';
 import type { CapacitorKakaoPlugin, KakaoScope } from './definitions';
 
@@ -25,9 +26,9 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
       }
       KakaoSdk.Auth.login({
         success: (authObj: any) => {
-          const { access_token } = authObj;
-          this.setAccessToken(access_token);
-          resolve({ value: access_token });
+          const { accessToken } = this.adaptCamelCase(authObj);
+          this.setAccessToken(accessToken);
+          resolve({ value: accessToken });
         },
         fail: (err: any) => {
           console.error(err);
@@ -112,7 +113,7 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
       KakaoSdk.API.request({
         url: '/v2/user/me',
         success: (result: any) => {
-          resolve({ value: result });
+          resolve({ value: this.adaptCamelCase(result) });
         },
         fail: (error: any) => {
           reject(error);
@@ -131,7 +132,7 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
         url: '/v1/api/talk/friends',
         data: options,
         success: (result: any) => {
-          resolve({ value: result });
+          resolve({ value: this.adaptCamelCase(result) });
         },
         fail: (error: any) => {
           reject(error);
@@ -165,7 +166,7 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
       KakaoSdk.API.request({
         url: '/v2/user/scopes',
         success: (result: any) => {
-          resolve({ value: result.scopes as KakaoScope[] });
+          resolve({ value: this.adaptCamelCase(result.scopes) as KakaoScope[] });
         },
         fail: (error: any) => {
           reject(error);
@@ -176,5 +177,41 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
 
   private setAccessToken(token: string): void {
     KakaoSdk.Auth.setAccessToken(token);
+  }
+
+  private transform<T, V>(targetObject: T | any | object): V | any {
+    if (Array.isArray(targetObject)) {
+      return (targetObject as T[]).map(value => this.transform<T, V>(value)) as any;
+    } else if (!this.isObject(targetObject)) {
+      return targetObject;
+    }
+
+    const transformed: any = {};
+    const keys = Object.keys(targetObject);
+
+    for (const key of keys) {
+      const value = targetObject[key];
+      const transformedKey = camelCase(key);
+
+      if (Array.isArray((value))) {
+        transformed[transformedKey] = value.map(v => this.transform(v));
+      } else if (this.isObject(value)) {
+        transformed[transformedKey] = this.transform(value);
+      } else {
+        transformed[transformedKey] = value;
+      }
+    }
+
+    return transformed as V;
+  }
+
+  private adaptCamelCase<T, V>(response: T): V {
+    return this.transform<T, V>(response);
+  }
+
+  private isObject(value: any): boolean {
+    const type = typeof value;
+  
+    return !!value && (type === 'object');
   }
 }
