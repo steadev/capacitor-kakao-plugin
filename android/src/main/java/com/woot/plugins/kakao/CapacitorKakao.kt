@@ -183,14 +183,14 @@ class CapacitorKakao(var activity: AppCompatActivity) {
                 call.reject("동의 정보 확인 실패" + error.toString())
             }else if (scopeInfo != null) {
                 Log.i(TAG, "동의 정보 확인 성공\n 현재 가지고 있는 동의 항목 $scopeInfo")
-                val scopeIdList = JSArray()
+                val scopeList = JSArray()
                 if (scopeInfo.scopes != null) {
                     for (scope in scopeInfo.scopes!!) {
-                        scopeIdList.put(scope.id)
+                        scopeList.put(scope)
                     }
                 }
                 val ret = JSObject()
-                ret.put("value", scopeIdList)
+                ret.put("value", scopeList)
                 call.resolve(ret);
             }
         }

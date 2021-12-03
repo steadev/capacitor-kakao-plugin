@@ -171,9 +171,9 @@ extension Encodable {
             scopes.append(scope)
         }
             
-        if scopes.count == 0  { 
+        if scopes.count == 0  {
             call.resolve()
-            return 
+            return
         }
 
         //필요한 scope으로 토큰갱신을 한다.
@@ -189,14 +189,15 @@ extension Encodable {
         }
     }
 
-    @objc private func getUserScopes(_ call: CAPPluginCall) -> Any {
+    @objc public func getUserScopes(_ call: CAPPluginCall) -> Void {
         UserApi.shared.scopes() { (scopeInfo, error) in
             if error != nil {
                 call.reject("get kakao user scope failed : ")
             }
             else {
+                let scopeInfoDict = scopeInfo?.toDictionary
                 call.resolve([
-                    "value": scopeInfo as Any
+                    "value": (scopeInfoDict != nil) ? scopeInfoDict!["scopes"] as Any : [] as Any
                 ])
             }
         }
