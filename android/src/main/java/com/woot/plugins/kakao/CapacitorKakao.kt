@@ -135,19 +135,12 @@ class CapacitorKakao(var activity: AppCompatActivity) {
         val offset = call.getInt("offset")
         val limit = call.getInt("limit")
         var order = Order.ASC
-        var friendOrder = FriendOrder.FAVORITE
-        if (call.getString("order")?.toUpperCase() == "desc") {
+        if (call.getString("order")?.toUpperCase() == "DESC") {
             order = Order.DESC
-        }
-        if (call.getString("friendOrder")?.toUpperCase() == "NICKNAME") {
-            friendOrder = FriendOrder.NICKNAME
         }
         // 카카오톡 친구 목록 가져오기 (기본)
         TalkApiClient.instance.friends(
-            offset = offset,
-            limit = limit,
-            order = order,
-            friendOrder = friendOrder
+            offset = offset, limit = limit, order = order
         ) { friends, error ->
             if (error != null) {
                 Log.e(TAG, "카카오톡 친구 목록 가져오기 실패", error)

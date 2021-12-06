@@ -123,7 +123,6 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
     })
   }
   async getFriendList(options?: KakaoFriendOption): Promise<{ value: any }> {
-    delete options?.friendOrder;
     return new Promise((resolve, reject) => {
       KakaoSdk.API.request({
         url: '/v1/api/talk/friends',

@@ -2,7 +2,6 @@ export interface KakaoFriendOption {
   offset?: number;
   limit?: number;
   order?: 'asc' | 'desc';
-  friendOrder?: 'FAVORITE' | 'NICKNAME';
 }
 
 export interface KakaoScope {
