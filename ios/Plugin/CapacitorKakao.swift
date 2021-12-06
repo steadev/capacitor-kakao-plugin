@@ -146,7 +146,15 @@ extension Encodable {
     }
 
     @objc public func getFriendList(_ call: CAPPluginCall) -> Void {
-        TalkApi.shared.friends {(friends, error) in
+        let offset = call.getInt("offset")
+        let limit = call.getInt("limit")
+        var order = Order.Asc
+        if (call.getString("order")?.uppercased() == "DESC") {
+            order = Order.Desc
+        }
+        TalkApi.shared.friends (
+            offset:offset, limit:limit, order: order
+        ) {(friends, error) in
             if let error = error {
                 print(error)
                 call.reject("getFriendList() failed.")
