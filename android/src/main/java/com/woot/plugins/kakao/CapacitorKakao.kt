@@ -19,6 +19,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.kakao.sdk.talk.TalkApiClient
+import com.kakao.sdk.talk.model.Friend
 import com.kakao.sdk.talk.model.FriendOrder
 import com.kakao.sdk.talk.model.Order
 import org.json.JSONArray
@@ -131,8 +132,23 @@ class CapacitorKakao(var activity: AppCompatActivity) {
     }
 
     fun getFriendList(call: PluginCall) {
+        val offset = call.getInt("offset")
+        val limit = call.getInt("limit")
+        var order = Order.ASC
+        var friendOrder = FriendOrder.FAVORITE
+        if (call.getString("order")?.toUpperCase() == "desc") {
+            order = Order.DESC
+        }
+        if (call.getString("friendOrder")?.toUpperCase() == "NICKNAME") {
+            friendOrder = FriendOrder.NICKNAME
+        }
         // 카카오톡 친구 목록 가져오기 (기본)
-        TalkApiClient.instance.friends { friends, error ->
+        TalkApiClient.instance.friends(
+            offset = offset,
+            limit = limit,
+            order = order,
+            friendOrder = friendOrder
+        ) { friends, error ->
             if (error != null) {
                 Log.e(TAG, "카카오톡 친구 목록 가져오기 실패", error)
                 call.reject("카카오톡 친구 목록 가져오기 실패 : " + error.toString())
