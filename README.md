@@ -1,8 +1,6 @@
 # capacitor-kakao-plugin
 
-
 Referenced [capacitor3-kakao-login](https://github.com/efluvi/capacitor3-kakao-login)
-
 
 ## Provided Functions
 
@@ -127,29 +125,29 @@ public class GlobalApplication extends Application {
 ```xml
 <dict>
   <array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>kakao{NATIVE_APP_KEY}</string>
-				<string>io.ionic.starter</string>
-			</array>
-		</dict>
+     <dict>
+	<key>CFBundleURLSchemes</key>
+   	<array>
+	    <string>kakao{NATIVE_APP_KEY}</string>
+	    <string>io.ionic.starter</string>
 	</array>
-  
-	<key>KAKAO_APP_KEY</key>
-	<string>{NATIVE_APP_KEY}</string>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>kakao{NATIVE_APP_KEY}</string>
-		<string>kakaokompassauth</string>
-		<string>storykompassauth</string>
-		<string>kakaolink</string>
-		<string>storylink</string>
-		<string>kakaotalk</string>
-		<string>kakaotalk-5.9.7</string>
-		<string>kakaostory-2.9.0</string>
+     </dict>
   </array>
-</dic>
+  
+  <key>KAKAO_APP_KEY</key>
+  <string>{NATIVE_APP_KEY}</string>
+  <key>LSApplicationQueriesSchemes</key>
+  <array>
+     <string>kakao{NATIVE_APP_KEY}</string>
+     <string>kakaokompassauth</string>
+     <string>storykompassauth</string>
+     <string>kakaolink</string>
+     <string>storylink</string>
+     <string>kakaotalk</string>
+     <string>kakaotalk-5.9.7</string>
+     <string>kakaostory-2.9.0</string>
+  </array>
+</dict>
 ```
 
 - Add initial kakao codes to `AppDelegate.swift`
@@ -168,7 +166,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
     
-    		// Initialize Kakao
+    	// Initialize Kakao
 +       let key = Bundle.main.infoDictionary?["KAKAO_APP_KEY"] as? String
 +       KakaoSDK.initSDK(appKey: key!)
         return true
@@ -180,7 +178,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the app was launched with a url. Feel free to add additional processing here,
         // but if you want the App API to support tracking app url opens, make sure to keep this call
     
-    		// Need for Login with KakaoTalk
+    	// Need for Login with KakaoTalk
 +       if (AuthApi.isKakaoTalkLoginUrl(url)) {
 +           return AuthController.handleOpenUrl(url: url)
 +       }
@@ -200,15 +198,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 - `kakaoLogin()`
 - `kakaoLogout()`
 - `kakaoUnlink()`
-- `sendLinkFeed(...)`
+- `sendLinkFeed(options)`
 - `getUserInfo()`
-- `getFriendList(...)`
-- `loginWithNewScopes(...)`
+- `getFriendList(options)`
+- `loginWithNewScopes(scopes)`
 - `getUserScopes()`
 
 
 
-### initializeKakao(options) => Promise<void>
+### initializeKakao(options)
 
 ---
 
@@ -216,7 +214,7 @@ It is only for web implementation. If you want to use kakao functions in web env
 
 <b>Parameter</b>
 
-```json
+```javascript
 {
   webKey: {kakao_web_key}
 }
@@ -233,7 +231,7 @@ And the return value(access_token) doesn't needed in general. Kakao SDK automati
 
 <b>Return</b>
 
-```json
+```javascript
 {
   value: {kakao_access_token}
 }
@@ -266,7 +264,7 @@ This is a function to send a KakaoTalk message by composing a message in JSON fo
 
 <b>Parameter</b>
 
-```json
+```javascript
 { 
   title: string;
   description: string;
@@ -302,7 +300,7 @@ There is an error in KakaoTalk sdk (`Android`, `Javascript`). There is another o
 
 <b>Parameter</b>
 
-```json
+```javascript
 {
   offset?: number;
   limit?: number;
@@ -312,7 +310,7 @@ There is an error in KakaoTalk sdk (`Android`, `Javascript`). There is another o
 
 <b>Return</b>
 
-```json
+```javascript
 [
   {
     id: number;	// 회원번호
@@ -321,7 +319,7 @@ There is an error in KakaoTalk sdk (`Android`, `Javascript`). There is another o
     profileNickname?: string; // 프로필 닉네임
     profileThumbnailImage?:	string;	// 프로필 썸네일(Thumbnail) 이미지. HTTPS만 지원
     allowedMsg?: boolean; // 메시지 차단 여부
-	}
+  }
 ]
 ```
 
@@ -348,7 +346,7 @@ Retrieves the detailed information list of consent items that the user has agree
 
 <b>Return</b>
 
-```json
+```javascript
 [
   {
     agreed: boolean;
@@ -360,4 +358,5 @@ Retrieves the detailed information list of consent items that the user has agree
   }
 ]
 ```
+
 
