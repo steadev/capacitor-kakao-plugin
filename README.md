@@ -205,6 +205,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 - `getUserScopes()`
 
 
+<br />
 
 ### initializeKakao(options): Promise<void>
 
@@ -221,7 +222,7 @@ It is only for web implementation. If you want to use kakao functions in web env
 ```
 
 
-
+<br />
 
 ### kakaoLogin(): Promise<{ value: string; }>
 
@@ -240,6 +241,7 @@ And the return value(access_token) doesn't needed in general. Kakao SDK automati
 
 
 
+<br />
 
 ### kakaoLogout(): Promise<void>
 
@@ -249,7 +251,7 @@ This function is used to log out the currently logged in user.
 Logout expires the token so that Kakao API calls can no longer be made with that access token.
 
 
-
+<br />
 
 ### kakaoUnlink(): Promise<void>
 
@@ -258,7 +260,7 @@ Logout expires the token so that Kakao API calls can no longer be made with that
 This function is called to disconnect the app from the user.
 
 
-
+<br />
 
 ### sendLinkFeed(options): Promise<void>
 
@@ -279,7 +281,7 @@ This is a function to send a KakaoTalk message by composing a message in JSON fo
 ```
 
 
-
+<br />
 
 ### getUserInfo(): Promise<{ value: any }>
 
@@ -293,7 +295,7 @@ see link below for detail return value
 [Kakao user info Response](https://developers.kakao.com/docs/latest/ko/kakaologin/common#user-info)
 
 
-
+<br />
 
 ### getFriendList(options): Promise<{ value: any }>
 
@@ -330,7 +332,7 @@ There is an error in KakaoTalk sdk (`Android`, `Javascript`). There is another o
 ```
 
 
-
+<br />
 
 ### loginWithNewScopes(scopes: string[]): Promise<void>
 
@@ -344,7 +346,7 @@ scopes can find in your Kakao console
 `https://developers.kakao.com/console/app/{your_kakao_app_id}/product/login/scope`
 
 
-
+<br />
 
 ### getUserScopes(): Promise<{ value: KakaoScope[] }>
 
