@@ -70,9 +70,7 @@ class CapacitorKakao(var activity: AppCompatActivity) {
     fun kakaoLogout(call: PluginCall) {
         UserApiClient.instance
             .logout { error: Throwable? ->
-                val ret = JSObject()
-                ret.put("value", "done")
-                call.resolve(ret)
+                call.resolve()
                 null
             }
     }
@@ -80,9 +78,7 @@ class CapacitorKakao(var activity: AppCompatActivity) {
     fun kakaoUnlink(call: PluginCall) {
         UserApiClient.instance
             .unlink { error: Throwable? ->
-                val ret = JSObject()
-                ret.put("value", "done")
-                call.resolve(ret)
+                call.resolve()
                 null
             }
     }
@@ -103,9 +99,7 @@ class CapacitorKakao(var activity: AppCompatActivity) {
                 } else if (linkResult != null) {
                     activity.startActivity(linkResult.intent)
                 }
-                val ret = JSObject()
-                ret.put("value", "done")
-                call.resolve(ret)
+                call.resolve()
                 null
             }
     }

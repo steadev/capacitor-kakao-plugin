@@ -58,10 +58,7 @@ extension Encodable {
                 call.reject("error")
             }
             else {
-
-                call.resolve([
-                    "value": "done"
-                ])
+                call.resolve()
             }
         }
     }
@@ -76,10 +73,7 @@ extension Encodable {
                 call.reject("error")
             }
             else {
-
-                call.resolve([
-                    "value": "done"
-                ])
+                call.resolve()
             }
         }
     }
@@ -121,9 +115,7 @@ extension Encodable {
                         guard let linkResult = linkResult else { return }
                         UIApplication.shared.open(linkResult.url, options: [:], completionHandler: nil)
                         
-                        call.resolve([
-                            "value": "done"
-                        ])
+                        call.resolve()
                     }
                 }
             }

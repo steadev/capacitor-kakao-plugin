@@ -10,12 +10,15 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
   webKey: any;
 
   initializeKakao(options: { appKey: string, webKey: string }) {
-    return new Promise<{ value: string }>(resolve => {
+    return new Promise<void>((resolve, reject) => {
+      if (options.webKey === undefined) {
+        reject();
+      }
       if (this.webKey === undefined) {
         this.webKey = options.webKey;
       }
       Kakao.init(this.webKey);
-      resolve({ value: 'done' });
+      resolve();
     });
   }
 
@@ -41,30 +44,30 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
 
   //웹 로그아웃
   kakaoLogout() {
-    return new Promise<{ value: string }>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       if (!this.webKey) {
         reject('kakao_sdk_not_initialzed');
       }
 
       KakaoSdk.Auth.logout();
-      resolve({ value: 'done' });
+      resolve();
     });
   }
 
   //unlink
   kakaoUnlink() {
-    return new Promise<{ value: string }>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       if (!this.webKey) {
         reject('kakao_sdk_not_initialzed');
       }
 
       KakaoSdk.API.request({
         url: '/v1/user/unlink',
-        success: function (response: any) {
+        success: (response: any) => {
           console.log(response);
-          resolve({ value: 'done' });
+          resolve();
         },
-        fail: function (error: any) {
+        fail: (error: any) => {
           console.log(error);
           reject(error);
         },
@@ -80,7 +83,7 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
     imageLinkUrl: string;
     buttonTitle: string;
   }) {
-    return new Promise<{ value: string }>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       if (!this.webKey) {
         reject('kakao_sdk_not_initialzed');
       }
@@ -102,8 +105,8 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
             },
           },
         ],
-        callback: function () {
-          resolve({ value: 'done' });
+        callback: () => {
+          resolve();
         },
       });
     });
