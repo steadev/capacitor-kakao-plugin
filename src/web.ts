@@ -131,7 +131,11 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
         url: '/v1/api/talk/friends',
         data: options ? RequestAdapter.adapt(options) : undefined,
         success: (result: any) => {
-          resolve({ value: ResponseAdapter.adapt(result) });
+          if (Array.isArray(result?.elements)) {
+            resolve({ value: ResponseAdapter.adapt(result.elements) });
+          } else {
+            reject();
+          }
         },
         fail: (error: any) => {
           reject(error);
