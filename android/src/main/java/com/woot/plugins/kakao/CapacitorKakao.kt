@@ -44,7 +44,6 @@ class CapacitorKakao(var activity: AppCompatActivity) {
                     } else {
                         call.reject("no_data")
                     }
-                    null
                 }
         } else {
             UserApiClient.instance
@@ -62,7 +61,6 @@ class CapacitorKakao(var activity: AppCompatActivity) {
                     } else {
                         call.reject("no_data")
                     }
-                    null
                 }
         }
     }
@@ -70,16 +68,22 @@ class CapacitorKakao(var activity: AppCompatActivity) {
     fun kakaoLogout(call: PluginCall) {
         UserApiClient.instance
             .logout { error: Throwable? ->
-                call.resolve()
-                null
+                if (error != null) {
+                    call.reject()
+                } else {
+                    call.resolve()
+                }
             }
     }
 
     fun kakaoUnlink(call: PluginCall) {
         UserApiClient.instance
             .unlink { error: Throwable? ->
-                call.resolve()
-                null
+                if (error != null) {
+                    call.reject()
+                } else {
+                    call.resolve()
+                }
             }
     }
 
@@ -100,7 +104,6 @@ class CapacitorKakao(var activity: AppCompatActivity) {
                     activity.startActivity(linkResult.intent)
                 }
                 call.resolve()
-                null
             }
     }
 
