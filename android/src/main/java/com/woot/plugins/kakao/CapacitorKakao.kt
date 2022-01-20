@@ -69,7 +69,7 @@ class CapacitorKakao(var activity: AppCompatActivity) {
         UserApiClient.instance
             .logout { error: Throwable? ->
                 if (error != null) {
-                    call.reject()
+                    call.reject("logout failed")
                 } else {
                     call.resolve()
                 }
@@ -80,7 +80,7 @@ class CapacitorKakao(var activity: AppCompatActivity) {
         UserApiClient.instance
             .unlink { error: Throwable? ->
                 if (error != null) {
-                    call.reject()
+                    call.reject("unlink failed")
                 } else {
                     call.resolve()
                 }
