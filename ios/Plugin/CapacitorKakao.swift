@@ -29,8 +29,8 @@ extension Encodable {
                 }
                 else {
                     call.resolve([
-                        "accessToken", oauthToken?.accessToken ?? "",
-                        "refreshToken", oauthToken?.refreshToken ?? ""
+                        "accessToken": oauthToken?.accessToken ?? "",
+                        "refreshToken": oauthToken?.refreshToken ?? ""
                     ])
                 }
             }
@@ -43,8 +43,8 @@ extension Encodable {
                     }
                     else {
                         call.resolve([
-                            "accessToken", oauthToken?.accessToken ?? "",
-                            "refreshToken", oauthToken?.refreshToken ?? ""
+                            "accessToken": oauthToken?.accessToken ?? "",
+                            "refreshToken": oauthToken?.refreshToken ?? ""
                         ])
                     }
                 }
