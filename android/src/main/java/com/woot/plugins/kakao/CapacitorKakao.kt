@@ -56,7 +56,8 @@ class CapacitorKakao(var activity: AppCompatActivity) {
                     } else if (oAuthToken != null) {
                         Log.i(TAG, "login success : " + oAuthToken.accessToken)
                         val ret = JSObject()
-                        ret.put("value", oAuthToken.accessToken)
+                        ret.put("accessToken", oAuthToken.accessToken)
+                        ret.put("refreshToken", oAuthToken.refreshToken)
                         call.resolve(ret)
                     } else {
                         call.reject("no_data")
