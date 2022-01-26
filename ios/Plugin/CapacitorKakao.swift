@@ -21,6 +21,7 @@ extension Encodable {
     @objc public func kakaoLogin(_ call: CAPPluginCall) -> Void {
         
         // 카카오톡 설치 여부 확인
+        // if kakaotalk app exists, login with app. else, login with web
         if (UserApi.isKakaoTalkLoginAvailable()) {
             UserApi.shared.loginWithKakaoTalk {(oauthToken, error) in
                 if let error = error {
@@ -28,13 +29,13 @@ extension Encodable {
                 }
                 else {
                     call.resolve([
-                        "value": oauthToken?.accessToken ?? ""
+                        "accessToken", oauthToken?.accessToken ?? "",
+                        "refreshToken", oauthToken?.refreshToken ?? ""
                     ])
                 }
             }
         }
         else{
-            
             UserApi.shared.loginWithKakaoAccount {(oauthToken, error) in
                     if let error = error {
                         print(error)
@@ -42,7 +43,8 @@ extension Encodable {
                     }
                     else {
                         call.resolve([
-                            "value": oauthToken?.accessToken ?? ""
+                            "accessToken", oauthToken?.accessToken ?? "",
+                            "refreshToken", oauthToken?.refreshToken ?? ""
                         ])
                     }
                 }
