@@ -26,7 +26,7 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
   kakaoLogin() {
     return new Promise<KakaoToken>((resolve, reject) => {
       if (!this.webKey) {
-        reject('kakao_sdk_not_initialzed');
+        reject('kakao_sdk_not_initialized');
       }
       KakaoSdk.Auth.login({
         success: (authObj: any) => {
@@ -58,7 +58,7 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
   kakaoUnlink() {
     return new Promise<void>((resolve, reject) => {
       if (!this.webKey) {
-        reject('kakao_sdk_not_initialzed');
+        reject('kakao_sdk_not_initialized');
       }
 
       KakaoSdk.API.request({
@@ -85,7 +85,7 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
   }) {
     return new Promise<void>((resolve, reject) => {
       if (!this.webKey) {
-        reject('kakao_sdk_not_initialzed');
+        reject('kakao_sdk_not_initialized');
       }
       KakaoSdk.Link.sendDefault({
         objectType: 'feed',
