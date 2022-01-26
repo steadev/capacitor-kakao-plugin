@@ -2,7 +2,7 @@ import { WebPlugin } from '@capacitor/core';
 import camelCase from 'lodash.camelcase';
 import snake_case from 'lodash.snakecase';
 import * as Kakao from './assets/kakao-sdk';
-import type { CapacitorKakaoPlugin, KakaoFriendOption, KakaoScope } from './definitions';
+import type { CapacitorKakaoPlugin, KakaoFriendOption, KakaoScope, KakaoToken } from './definitions';
 
 const KakaoSdk: any = Kakao;
 
@@ -24,15 +24,15 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
 
   //웹 카카오 로그인
   kakaoLogin() {
-    return new Promise<{ value: string }>((resolve, reject) => {
+    return new Promise<KakaoToken>((resolve, reject) => {
       if (!this.webKey) {
         reject('kakao_sdk_not_initialzed');
       }
       KakaoSdk.Auth.login({
         success: (authObj: any) => {
-          const { accessToken } = ResponseAdapter.adapt(authObj);
+          const { accessToken, refreshToken } = ResponseAdapter.adapt(authObj);
           this.setAccessToken(accessToken);
-          resolve({ value: accessToken });
+          resolve({ accessToken, refreshToken });
         },
         fail: (err: any) => {
           console.error(err);

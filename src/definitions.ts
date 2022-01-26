@@ -12,11 +12,17 @@ export interface KakaoScope {
   type: string;
   using: boolean;
 }
+
+export interface KakaoToken {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export interface CapacitorKakaoPlugin {
   /** initialize only for web. */
   initializeKakao(options: { appKey: string; webKey: string; }): Promise<void>;
   /** kakao login */
-  kakaoLogin(): Promise<{ value: string }>;
+  kakaoLogin(): Promise<KakaoToken>;
   /** kakao logout */
   kakaoLogout(): Promise<void>;
   /** disconnect link with app */
