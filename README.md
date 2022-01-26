@@ -215,7 +215,7 @@ It is only for web implementation. If you want to use kakao functions in web env
 
 <b>Parameter</b>
 
-```javascript
+```typescript
 {
   webKey: {kakao_web_key}
 }
@@ -233,9 +233,10 @@ And the return value(access_token) doesn't needed in general. Kakao SDK automati
 
 <b>Return</b>
 
-```javascript
+```typescript
 {
-  value: {kakao_access_token}
+  accessToken: {kakao_access_token};
+  refreshToken: {kakao_refresh_token};
 }
 ```
 
@@ -270,7 +271,7 @@ This is a function to send a KakaoTalk message by composing a message in JSON fo
 
 <b>Parameter</b>
 
-```javascript
+```typescript
 { 
   title: string;
   description: string;
@@ -308,7 +309,7 @@ There is an error in KakaoTalk sdk (`Android`, `Javascript`). There is another o
 
 <b>Parameter</b>
 
-```javascript
+```typescript
 {
   offset?: number;
   limit?: number;
@@ -318,7 +319,7 @@ There is an error in KakaoTalk sdk (`Android`, `Javascript`). There is another o
 
 <b>Return</b>
 
-```javascript
+```typescript
 [
   {
     id: number;	// 회원번호
@@ -356,7 +357,7 @@ Retrieves the detailed information list of consent items that the user has agree
 
 <b>Return</b>
 
-```javascript
+```typescript
 [
   {
     agreed: boolean;
