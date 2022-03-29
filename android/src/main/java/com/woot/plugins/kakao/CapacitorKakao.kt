@@ -90,10 +90,16 @@ class CapacitorKakao(var activity: AppCompatActivity) {
     }
 
     fun sendLinkFeed(call: PluginCall) {
-        val link = Link(call.getString("imageLinkUrl"), call.getString("imageLinkUrl"), null, null)
-        val content = Content(call.getString("title")!!, call.getString("imageUrl")!!, link, call.getString("description"))
+        val imageLinkUrl = call.getString("imageLinkUrl")
+        val imageUrl: String = if (call.getString("imageUrl") === null) "" else call.getString("imageUrl")!!
+        val title: String = if (call.getString("title") === null) "" else call.getString("title")!!
+        val description = call.getString("description")
+        val buttonTitle: String = if (call.getString("buttonTitle") === null) "" else call.getString("buttonTitle")!!
+        
+        val link = Link(imageLinkUrl, imageLinkUrl, null, null)
+        val content = Content(title, imageUrl, link, description)
         val buttons = ArrayList<Button>()
-        buttons.add(Button(call.getString("buttonTitle")!!, link))
+        buttons.add(Button(buttonTitle, link))
         val feed = FeedTemplate(content, null, buttons)
         LinkClient.instance
             .defaultTemplate(
