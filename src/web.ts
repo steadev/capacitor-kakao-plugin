@@ -82,6 +82,8 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
     imageUrl: string;
     imageLinkUrl: string;
     buttonTitle: string;
+    imageWidth?: number;
+    imageHeight?: number;
   }) {
     return new Promise<void>((resolve, reject) => {
       if (!this.webKey) {
@@ -93,6 +95,8 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
           title: options.title,
           description: options.description,
           imageUrl: options.imageUrl,
+          imageWidth: options.imageWidth,
+          imageHeight: options.imageHeight,
           link: {
             mobileWebUrl: options.imageLinkUrl,
           },

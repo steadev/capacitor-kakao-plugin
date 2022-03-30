@@ -85,20 +85,24 @@ extension Encodable {
 
         let title = call.getString("title") ?? ""
         let description = call.getString("description") ?? ""
-        let image_url = call.getString("imageUrl") ?? ""
-        let image_link_url = call.getString("imageLinkUrl") ?? ""
-        let button_title = call.getString("buttonTitle") ?? ""
+        let imageUrl = call.getString("imageUrl") ?? ""
+        let imageLinkUrl = call.getString("imageLinkUrl") ?? ""
+        let buttonTitle = call.getString("buttonTitle") ?? ""
+        let imageWidth: Int? = call.getInt("imageWidth")
+        let imageHeight: Int? = call.getInt("imageHeight")
 
         
         
-        let link = Link(webUrl: URL(string:image_link_url),
-                        mobileWebUrl: URL(string:image_link_url))
+        let link = Link(webUrl: URL(string:imageLinkUrl),
+                        mobileWebUrl: URL(string:imageLinkUrl))
 
-        let button = Button(title: button_title, link: link)
+        let button = Button(title: buttonTitle, link: link)
         let content = Content(title: title,
-                                imageUrl: URL(string:image_url)!,
-                                description: description,
-                                link: link)
+                              imageUrl: URL(string:imageUrl)!,
+                              imageWidth: imageWidth,
+                              imageHeight: imageHeight,
+                              description: description,
+                              link: link)
         let feedTemplate = FeedTemplate(content: content, social: nil, buttons: [button])
 
         //메시지 템플릿 encode

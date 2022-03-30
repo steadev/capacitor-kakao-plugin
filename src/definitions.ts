@@ -34,6 +34,8 @@ export interface CapacitorKakaoPlugin {
     imageUrl: string;
     imageLinkUrl: string;
     buttonTitle: string;
+    imageWidth?: number;
+    imageHeight?: number;
   }): Promise<void>;
   /** get kakao user info */
   getUserInfo(): Promise<{ value: any }>;

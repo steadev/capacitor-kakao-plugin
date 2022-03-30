@@ -95,9 +95,11 @@ class CapacitorKakao(var activity: AppCompatActivity) {
         val title: String = if (call.getString("title") === null) "" else call.getString("title")!!
         val description = call.getString("description")
         val buttonTitle: String = if (call.getString("buttonTitle") === null) "" else call.getString("buttonTitle")!!
+        val imageWidth: Int? = call.getInt("imageWidth")
+        val imageHeight: Int? = call.getInt("imageHeight")
         
         val link = Link(imageLinkUrl, imageLinkUrl, null, null)
-        val content = Content(title, imageUrl, link, description)
+        val content = Content(title, imageUrl, link, description, imageWidth, imageHeight)
         val buttons = ArrayList<Button>()
         buttons.add(Button(buttonTitle, link))
         val feed = FeedTemplate(content, null, buttons)
