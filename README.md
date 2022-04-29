@@ -1,7 +1,5 @@
 # capacitor-kakao-plugin
 
-Referenced [capacitor3-kakao-login](https://github.com/efluvi/capacitor3-kakao-login)
-
 ## Provided Functions
 
 - [login](https://developers.kakao.com/docs/latest/ko/kakaologin/common#login)
