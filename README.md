@@ -1,5 +1,7 @@
 # capacitor-kakao-plugin
 
+Kakao Plugin for Capacitor3
+
 ## Provided Functions
 
 - [login](https://developers.kakao.com/docs/latest/ko/kakaologin/common#login)
