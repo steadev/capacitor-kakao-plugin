@@ -209,7 +209,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 ---
 
-Both for web, app. In case of app, it returns `KakaoStatus` which notice kakao token status.
+It is for both web and app. 
+	
+In case of app, it returns `KakaoStatus` which notice kakao token status.
 
 <b>Parameter(only for web)</b>
 
