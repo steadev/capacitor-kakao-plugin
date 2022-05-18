@@ -1,285 +1,249 @@
-package com.woot.plugins.kakao
+import Foundation
+import Capacitor
 
-import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
-import com.getcapacitor.JSArray
-import com.getcapacitor.JSObject
-import com.getcapacitor.PluginCall
-import com.kakao.sdk.user.UserApiClient
-import com.kakao.sdk.auth.model.OAuthToken
-import com.kakao.sdk.template.model.FeedTemplate
-import com.kakao.sdk.link.LinkClient
-import com.kakao.sdk.link.model.LinkResult
-import com.kakao.sdk.template.model.Button
-import com.kakao.sdk.template.model.Content
-import com.kakao.sdk.template.model.Link
-import java.util.ArrayList
-import com.google.gson.Gson
-import com.kakao.sdk.auth.AuthApiClient
-import com.kakao.sdk.common.model.KakaoSdkError
-import com.kakao.sdk.talk.TalkApiClient
-import com.kakao.sdk.talk.model.Order
-import org.json.JSONArray
+import KakaoSDKUser
+import KakaoSDKCommon
+import KakaoSDKLink
+import KakaoSDKTemplate
+import KakaoSDKAuth
+import KakaoSDKTalk
 
-val gson = Gson()
-
-enum class TokenStatus {
-    LOGIN_NEEDED,
-    ERROR,
-    SUCCEED
+extension Encodable {
+    
+    var toDictionary : [String: Any]? {
+        guard let object = try? JSONEncoder().encode(self) else { return nil }
+        guard let dictionary = try? JSONSerialization.jsonObject(with: object, options: []) as? [String:Any] else { return nil }
+        return dictionary
+    }
 }
 
+enum TokenStatus: String {
+    case LOGIN_NEEDED
+    case ERROR
+    case SUCCEED
+}
 
-class CapacitorKakao(var activity: AppCompatActivity) {
-    fun initializeKakao(call: PluginCall) {
-        tokenAvailability() { status: TokenStatus ->
-            val ret = JSObject()
-            ret.put("status", status.toString())
-            call.resolve(ret)
+@objc public class CapacitorKakao: NSObject {
+
+    @objc public func initializeKakao(_ call: CAPPluginCall) -> Void {
+        tokenAvailability { (status: TokenStatus) in
+            call.resolve([
+                "status": status.rawValue
+            ])
         }
     }
 
-    fun kakaoLogin(call: PluginCall) {
-        if (UserApiClient.instance.isKakaoTalkLoginAvailable(activity)) {
-            UserApiClient.instance
-                .loginWithKakaoTalk(
-                        activity
-                ) { oAuthToken: OAuthToken?, error: Throwable? ->
-                    if (error != null) {
-                        Log.e(TAG, "login fail : ", error)
-                        call.reject(error.toString())
-                    } else if (oAuthToken != null) {
-                        Log.i(TAG, "login success : " + oAuthToken.accessToken)
-                        val ret = JSObject()
-                        ret.put("accessToken", oAuthToken.accessToken)
-                        ret.put("refreshToken", oAuthToken.refreshToken)
-                        call.resolve(ret)
-                    } else {
-                        call.reject("no_data")
-                    }
-                }
-        } else {
-            UserApiClient.instance
-                .loginWithKakaoAccount(
-                        activity
-                ) { oAuthToken: OAuthToken?, error: Throwable? ->
-                    if (error != null) {
-                        Log.e(TAG, "login fail : ", error)
-                        call.reject(error.toString())
-                    } else if (oAuthToken != null) {
-                        Log.i(TAG, "login success : " + oAuthToken.accessToken)
-                        val ret = JSObject()
-                        ret.put("accessToken", oAuthToken.accessToken)
-                        ret.put("refreshToken", oAuthToken.refreshToken)
-                        call.resolve(ret)
-                    } else {
-                        call.reject("no_data")
-                    }
-                }
-        }
-    }
-
-    fun kakaoLogout(call: PluginCall) {
-        UserApiClient.instance
-            .logout { error: Throwable? ->
-                if (error != null) {
-                    call.reject("logout failed")
-                } else {
-                    call.resolve()
-                }
-            }
-    }
-
-    fun kakaoUnlink(call: PluginCall) {
-        UserApiClient.instance
-            .unlink { error: Throwable? ->
-                if (error != null) {
-                    call.reject("unlink failed")
-                } else {
-                    call.resolve()
-                }
-            }
-    }
-
-    fun sendLinkFeed(call: PluginCall) {
-        val imageLinkUrl = call.getString("imageLinkUrl")
-        val imageUrl: String = if (call.getString("imageUrl") === null) "" else call.getString("imageUrl")!!
-        val title: String = if (call.getString("title") === null) "" else call.getString("title")!!
-        val description = call.getString("description")
-        val buttonTitle: String = if (call.getString("buttonTitle") === null) "" else call.getString("buttonTitle")!!
-        val imageWidth: Int? = call.getInt("imageWidth")
-        val imageHeight: Int? = call.getInt("imageHeight")
+    @objc public func kakaoLogin(_ call: CAPPluginCall) -> Void {
         
-        val link = Link(imageLinkUrl, imageLinkUrl, null, null)
-        val content = Content(title, imageUrl, link, description, imageWidth, imageHeight)
-        val buttons = ArrayList<Button>()
-        buttons.add(Button(buttonTitle, link))
-        val feed = FeedTemplate(content, null, buttons)
-        LinkClient.instance
-            .defaultTemplate(
-                    activity,
-                    feed
-            ) { linkResult: LinkResult?, error: Throwable? ->
-                if (error != null) {
-                    call.reject("kakao link failed: " + error.toString())
-                } else if (linkResult != null) {
-                    activity.startActivity(linkResult.intent)
+        // 카카오톡 설치 여부 확인
+        // if kakaotalk app exists, login with app. else, login with web
+        if (UserApi.isKakaoTalkLoginAvailable()) {
+            UserApi.shared.loginWithKakaoTalk {(oauthToken, error) in
+                if let error = error {
+                    call.reject("error")
                 }
-                call.resolve()
-            }
-    }
-
-    fun getUserInfo(call: PluginCall) {
-        // 사용자 정보 요청 (기본)
-        UserApiClient.instance.me { user, error ->
-            if (error != null) {
-                Log.e(TAG, "사용자 정보 요청 실패", error)
-                call.reject(error.toString());
-            }
-            else if (user != null) {
-                Log.i(TAG, "사용자 정보 요청 성공" +
-                        "\n회원번호: ${user.id}" +
-                        "\n이메일: ${user.kakaoAccount?.email}" +
-                        "\n닉네임: ${user.kakaoAccount?.profile?.nickname}" +
-                        "\n프로필사진: ${user.kakaoAccount?.profile?.thumbnailImageUrl}")
-                val userJsonData = JSObject(gson.toJson(user).toString())
-                val ret = JSObject()
-                ret.put("value", userJsonData)
-                call.resolve(ret)
+                else {
+                    call.resolve([
+                        "accessToken": oauthToken?.accessToken ?? "",
+                        "refreshToken": oauthToken?.refreshToken ?? ""
+                    ])
+                }
             }
         }
-    }
-
-    fun getFriendList(call: PluginCall) {
-        val offset = call.getInt("offset")
-        val limit = call.getInt("limit")
-        var order = Order.ASC
-        if (call.getString("order")?.toUpperCase() == "DESC") {
-            order = Order.DESC
-        }
-        // 카카오톡 친구 목록 가져오기 (기본)
-        TalkApiClient.instance.friends(
-            offset = offset, limit = limit, order = order
-        ) { friends, error ->
-            if (error != null) {
-                Log.e(TAG, "카카오톡 친구 목록 가져오기 실패", error)
-                call.reject("카카오톡 친구 목록 가져오기 실패 : " + error.toString())
-            }
-            else if (friends != null) {
-                Log.i(TAG, "카카오톡 친구 목록 가져오기 성공 \n${friends.elements?.joinToString("\n")}")
-                val friendList = ArrayList<JSObject>()
-                if (friends.elements != null) {
-                    for (friend in friends.elements!!) {
-                        friendList.add(JSObject(gson.toJson(friend).toString()))
+        else{
+            UserApi.shared.loginWithKakaoAccount {(oauthToken, error) in
+                    if let error = error {
+                        print(error)
+                        call.reject("error")
+                    }
+                    else {
+                        call.resolve([
+                            "accessToken": oauthToken?.accessToken ?? "",
+                            "refreshToken": oauthToken?.refreshToken ?? ""
+                        ])
                     }
                 }
-                val jsonArray = JSONArray(friendList)
-                val ret = JSObject()
-                ret.put("value", jsonArray)
-                call.resolve(ret);
+            
+        }
+    }
+    
+    @objc public func kakaoLogout(_ call: CAPPluginCall) -> Void {
+
+        UserApi.shared.logout {(error) in
+            if let error = error {
+                print(error)
+                call.reject("error")
+            }
+            else {
+                call.resolve()
             }
         }
     }
     
-    fun loginWithNewScopes(call: PluginCall) {
-        var scopes = mutableListOf<String>()
-        val tobeAgreedScopes = call.getArray("scopes").toList<String>()
-        for (scope in tobeAgreedScopes) {
-            scopes.add(scope)
-        }
-        if (scopes.count() > 0) {
-            Log.d(TAG, "사용자에게 추가 동의를 받아야 합니다.")
+    
+    
+    @objc public func kakaoUnlink(_ call: CAPPluginCall) -> Void {
 
-            UserApiClient.instance.loginWithNewScopes(activity, scopes) { token, error ->
-                if (error != null) {
-                    Log.e(TAG, "사용자 추가 동의 실패", error)
-                    // call.reject("scopes agree failed")
-                    if (UserApiClient.instance.isKakaoTalkLoginAvailable(activity)) {
-                        UserApiClient.instance
-                            .loginWithKakaoTalk(
-                                    activity
-                            ) { oAuthToken: OAuthToken?, error: Throwable? ->
-                                if (error != null) {
-                                    Log.e(TAG, "login fail : ", error)
-                                    call.reject(error.toString())
-                                } else if (oAuthToken != null) {
-                                    Log.i(TAG, "login success : " + oAuthToken.accessToken)
-                                    loginWithNewScopes(call)
-                                } else {
-                                    call.reject("no_data")
-                                }
-                            }
-                    } else {
-                        UserApiClient.instance
-                            .loginWithKakaoAccount(
-                                    activity
-                            ) { oAuthToken: OAuthToken?, error: Throwable? ->
-                                if (error != null) {
-                                    Log.e(TAG, "login fail : ", error)
-                                    call.reject(error.toString())
-                                } else if (oAuthToken != null) {
-                                    Log.i(TAG, "login success : " + oAuthToken.accessToken)
-                                    val ret = JSObject()
-                                    ret.put("accessToken", oAuthToken.accessToken)
-                                    ret.put("refreshToken", oAuthToken.refreshToken)
-                                    call.resolve(ret)
-                                } else {
-                                    call.reject("no_data")
-                                }
-                            }
-                    }
-                } else {
-                    Log.d(TAG, "allowed scopes: ${token!!.scopes}")
-                    call.resolve()
-                }
+        UserApi.shared.unlink {(error) in
+            if let error = error {
+                print(error)
+                call.reject("error")
             }
-        } else {
-            call.resolve()
-        }
-    }
-
-    fun getUserScopes(call: PluginCall) {
-        UserApiClient.instance.scopes { scopeInfo, error->
-            if (error != null) {
-                Log.e(TAG, "동의 정보 확인 실패", error)
-                call.reject("동의 정보 확인 실패" + error.toString())
-            }else if (scopeInfo != null) {
-                Log.i(TAG, "동의 정보 확인 성공\n 현재 가지고 있는 동의 항목 $scopeInfo")
-                val scopeList = JSArray()
-                if (scopeInfo.scopes != null) {
-                    for (scope in scopeInfo.scopes!!) {
-                        scopeList.put(scope)
-                    }
-                }
-                val ret = JSObject()
-                ret.put("value", scopeList)
-                call.resolve(ret);
+            else {
+                call.resolve()
             }
         }
     }
+    
+    
+    @objc public func sendLinkFeed(_ call: CAPPluginCall) -> Void {
 
-    private fun tokenAvailability(callback: (TokenStatus) -> Unit) {
-        if (AuthApiClient.instance.hasToken()) {
-            UserApiClient.instance.accessTokenInfo { _, error ->
-                if (error != null) {
-                    if (error is KakaoSdkError && error.isInvalidTokenError() == true) {
-                        callback(TokenStatus.LOGIN_NEEDED)
+        let title = call.getString("title") ?? ""
+        let description = call.getString("description") ?? ""
+        let imageUrl = call.getString("imageUrl") ?? ""
+        let imageLinkUrl = call.getString("imageLinkUrl") ?? ""
+        let buttonTitle = call.getString("buttonTitle") ?? ""
+        let imageWidth: Int? = call.getInt("imageWidth")
+        let imageHeight: Int? = call.getInt("imageHeight")
+
+        
+        
+        let link = Link(webUrl: URL(string:imageLinkUrl),
+                        mobileWebUrl: URL(string:imageLinkUrl))
+
+        let button = Button(title: buttonTitle, link: link)
+        let content = Content(title: title,
+                              imageUrl: URL(string:imageUrl)!,
+                              imageWidth: imageWidth,
+                              imageHeight: imageHeight,
+                              description: description,
+                              link: link)
+        let feedTemplate = FeedTemplate(content: content, social: nil, buttons: [button])
+
+        //메시지 템플릿 encode
+        if let feedTemplateJsonData = (try? SdkJSONEncoder.custom.encode(feedTemplate)) {
+
+        //생성한 메시지 템플릿 객체를 jsonObject로 변환
+            if let templateJsonObject = SdkUtils.toJsonObject(feedTemplateJsonData) {
+                LinkApi.shared.defaultLink(templateObject:templateJsonObject) {(linkResult, error) in
+                    if let error = error {
+                        print(error)
+                        call.reject("error")
                     }
                     else {
-                        callback(TokenStatus.ERROR)
+
+                        //do something
+                        guard let linkResult = linkResult else { return }
+                        UIApplication.shared.open(linkResult.url, options: [:], completionHandler: nil)
+                        
+                        call.resolve()
+                    }
+                }
+            }
+        }
+    }
+
+    @objc public func getUserInfo(_ call: CAPPluginCall) -> Void {
+        UserApi.shared.me() {(user, error) in
+            if let error = error {
+                print(error)
+                call.reject("me() failed.")
+            }
+            else {
+                print("me() success.")
+                call.resolve([
+                    "value": user?.toDictionary as Any
+                ])
+            }
+        }
+    }
+
+    @objc public func getFriendList(_ call: CAPPluginCall) -> Void {
+        let offset = call.getInt("offset")
+        let limit = call.getInt("limit")
+        var order = Order.Asc
+        if (call.getString("order")?.uppercased() == "DESC") {
+            order = Order.Desc
+        }
+        TalkApi.shared.friends (
+            offset:offset, limit:limit, order: order
+        ) {(friends, error) in
+            if let error = error {
+                print(error)
+                call.reject("getFriendList() failed.")
+            }
+            else {
+                print("getFriendList() success")
+                let friendList = friends?.toDictionary
+                call.resolve([
+                    "value": (friendList != nil) ? friendList!["elements"] as Any : [] as Any
+                ])
+            }
+        }
+    }
+
+    @objc public func loginWithNewScopes(_ call: CAPPluginCall) ->  Void {
+        var scopes = [String]()
+        guard let tobeAgreedScopes = call.getArray("scopes", String.self) else {
+            call.reject("scopes agree failed")
+            return
+        }
+        for scope in tobeAgreedScopes {
+            scopes.append(scope)
+        }
+            
+        if scopes.count == 0  {
+            call.resolve()
+            return
+        }
+
+        //필요한 scope으로 토큰갱신을 한다.
+        UserApi.shared.loginWithKakaoAccount(scopes: scopes) { (_, error) in
+            if let error = error {
+                print(error)
+                call.reject("scopes agree failed")
+            }
+            else {
+                call.resolve()
+            }
+
+        }
+    }
+
+    @objc public func getUserScopes(_ call: CAPPluginCall) -> Void {
+        UserApi.shared.scopes() { (scopeInfo, error) in
+            if error != nil {
+                call.reject("get kakao user scope failed : ")
+            }
+            else {
+                let scopeInfoDict = scopeInfo?.toDictionary
+                call.resolve([
+                    "value": (scopeInfoDict != nil) ? scopeInfoDict!["scopes"] as Any : [] as Any
+                ])
+            }
+        }
+    }
+
+    private func tokenAvailability(completion: @escaping ((TokenStatus) -> Void)) -> Void {
+        if (AuthApi.hasToken()) {
+            UserApi.shared.accessTokenInfo { (_, error) in
+                if let error = error {
+                    if let sdkError = error as? SdkError, sdkError.isInvalidTokenError() == true  {
+                        completion(TokenStatus.LOGIN_NEEDED)
+                    }
+                    else {
+                        //기타 에러
+                        completion(TokenStatus.ERROR)
                     }
                 }
                 else {
-                    callback(TokenStatus.SUCCEED)
+                    //토큰 유효성 체크 성공(필요 시 토큰 갱신됨)
+                    completion(TokenStatus.SUCCEED)
                 }
             }
         }
         else {
-            callback(TokenStatus.LOGIN_NEEDED)
+            completion(TokenStatus.LOGIN_NEEDED)
         }
-    }
-
-    companion object {
-        private const val TAG = "CapacitorKakao"
     }
 }
