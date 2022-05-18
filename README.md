@@ -1,7 +1,5 @@
 # capacitor-kakao-plugin
 
-Referenced [capacitor3-kakao-login](https://github.com/efluvi/capacitor3-kakao-login)
-
 ## Provided Functions
 
 - [login](https://developers.kakao.com/docs/latest/ko/kakaologin/common#login)
@@ -211,13 +209,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 ---
 
-It is only for web implementation. If you want to use kakao functions in web environment, use this at the start of the app.
+Both for web, app. In case of app, it returns `KakaoStatus` which notice kakao token status.
 
-<b>Parameter</b>
+<b>Parameter(only for web)</b>
 
 ```typescript
 {
   webKey: {kakao_web_key}
+}
+```
+
+<b>Return(only for app)</b>
+```typescript
+{
+  status: KakaoStatus
+}
+
+enum KakaoStatus {
+  LOGIN_NEEDED = 'LOGIN_NEEDED',
+  ERROR = 'ERROR',
+  SUCCEED = 'SUCCEED'
 }
 ```
 

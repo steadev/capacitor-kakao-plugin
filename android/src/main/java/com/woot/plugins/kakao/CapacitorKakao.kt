@@ -15,18 +15,30 @@ import com.kakao.sdk.template.model.Content
 import com.kakao.sdk.template.model.Link
 import java.util.ArrayList
 import com.google.gson.Gson
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.google.gson.reflect.TypeToken
+import com.kakao.sdk.auth.AuthApiClient
+import com.kakao.sdk.common.model.KakaoSdkError
 import com.kakao.sdk.talk.TalkApiClient
-import com.kakao.sdk.talk.model.Friend
-import com.kakao.sdk.talk.model.FriendOrder
 import com.kakao.sdk.talk.model.Order
 import org.json.JSONArray
 
 val gson = Gson()
 
+enum class TokenStatus {
+    LOGIN_NEEDED,
+    ERROR,
+    SUCCEED
+}
+
+
 class CapacitorKakao(var activity: AppCompatActivity) {
+    fun initializeKakao(call: PluginCall) {
+        tokenAvailability() { status: TokenStatus ->
+            val ret = JSObject()
+            ret.put("status", status.toString())
+            call.resolve(ret)
+        }
+    }
+
     fun kakaoLogin(call: PluginCall) {
         if (UserApiClient.instance.isKakaoTalkLoginAvailable(activity)) {
             UserApiClient.instance
@@ -181,7 +193,41 @@ class CapacitorKakao(var activity: AppCompatActivity) {
             UserApiClient.instance.loginWithNewScopes(activity, scopes) { token, error ->
                 if (error != null) {
                     Log.e(TAG, "사용자 추가 동의 실패", error)
-                    call.reject("scopes agree failed")
+                    // call.reject("scopes agree failed")
+                    if (UserApiClient.instance.isKakaoTalkLoginAvailable(activity)) {
+                        UserApiClient.instance
+                            .loginWithKakaoTalk(
+                                    activity
+                            ) { oAuthToken: OAuthToken?, error: Throwable? ->
+                                if (error != null) {
+                                    Log.e(TAG, "login fail : ", error)
+                                    call.reject(error.toString())
+                                } else if (oAuthToken != null) {
+                                    Log.i(TAG, "login success : " + oAuthToken.accessToken)
+                                    loginWithNewScopes(call)
+                                } else {
+                                    call.reject("no_data")
+                                }
+                            }
+                    } else {
+                        UserApiClient.instance
+                            .loginWithKakaoAccount(
+                                    activity
+                            ) { oAuthToken: OAuthToken?, error: Throwable? ->
+                                if (error != null) {
+                                    Log.e(TAG, "login fail : ", error)
+                                    call.reject(error.toString())
+                                } else if (oAuthToken != null) {
+                                    Log.i(TAG, "login success : " + oAuthToken.accessToken)
+                                    val ret = JSObject()
+                                    ret.put("accessToken", oAuthToken.accessToken)
+                                    ret.put("refreshToken", oAuthToken.refreshToken)
+                                    call.resolve(ret)
+                                } else {
+                                    call.reject("no_data")
+                                }
+                            }
+                    }
                 } else {
                     Log.d(TAG, "allowed scopes: ${token!!.scopes}")
                     call.resolve()
@@ -209,6 +255,27 @@ class CapacitorKakao(var activity: AppCompatActivity) {
                 ret.put("value", scopeList)
                 call.resolve(ret);
             }
+        }
+    }
+
+    private fun tokenAvailability(callback: (TokenStatus) -> Unit) {
+        if (AuthApiClient.instance.hasToken()) {
+            UserApiClient.instance.accessTokenInfo { _, error ->
+                if (error != null) {
+                    if (error is KakaoSdkError && error.isInvalidTokenError() == true) {
+                        callback(TokenStatus.LOGIN_NEEDED)
+                    }
+                    else {
+                        callback(TokenStatus.ERROR)
+                    }
+                }
+                else {
+                    callback(TokenStatus.SUCCEED)
+                }
+            }
+        }
+        else {
+            callback(TokenStatus.LOGIN_NEEDED)
         }
     }
 

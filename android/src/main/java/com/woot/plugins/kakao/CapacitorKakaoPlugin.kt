@@ -18,9 +18,7 @@ class CapacitorKakaoPlugin : Plugin() {
 
     @PluginMethod
     fun initializeKakao(call: PluginCall) {
-        val ret = JSObject()
-        ret.put("value", "done")
-        call.resolve(ret)
+        implementation.initializeKakao(call)
     }
 
     @PluginMethod

@@ -11,13 +11,12 @@ public class CapacitorKakaoPlugin: CAPPlugin {
 
     //네이티브는 app delegate에서 초기화함
     @objc func initializeKakao(_ call: CAPPluginCall) {
-        call.resolve([
-            "value": "done"
-        ])
+        DispatchQueue.main.async {
+            self.implementation.initializeKakao(call)
+        }
     }
     
     @objc func kakaoLogin(_ call: CAPPluginCall) {
-        
         DispatchQueue.main.async {
             self.implementation.kakaoLogin(call)
         }
