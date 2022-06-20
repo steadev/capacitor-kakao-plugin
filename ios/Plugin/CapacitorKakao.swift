@@ -34,36 +34,43 @@ enum TokenStatus: String {
     }
 
     @objc public func kakaoLogin(_ call: CAPPluginCall) -> Void {
-        
+        let serviceTerms = call.getArray("serviceTerms", String.self) ?? nil
         // 카카오톡 설치 여부 확인
         // if kakaotalk app exists, login with app. else, login with web
         if (UserApi.isKakaoTalkLoginAvailable()) {
-            UserApi.shared.loginWithKakaoTalk {(oauthToken, error) in
-                if let error = error {
-                    call.reject("error")
+            if serviceTerms == nil {
+                UserApi.shared.loginWithKakaoTalk {(oauthToken, error) in
+                    self.handleKakaoLoginResponse(call, oauthToken: oauthToken, error: error)
                 }
-                else {
-                    call.resolve([
-                        "accessToken": oauthToken?.accessToken ?? "",
-                        "refreshToken": oauthToken?.refreshToken ?? ""
-                    ])
-                }
+            } else {
+                UserApi.shared.loginWithKakaoTalk(serviceTerms: serviceTerms, completion: {(oauthToken, error) in
+                    self.handleKakaoLoginResponse(call, oauthToken: oauthToken, error: error)
+                })
             }
         }
         else{
-            UserApi.shared.loginWithKakaoAccount {(oauthToken, error) in
-                    if let error = error {
-                        print(error)
-                        call.reject("error")
-                    }
-                    else {
-                        call.resolve([
-                            "accessToken": oauthToken?.accessToken ?? "",
-                            "refreshToken": oauthToken?.refreshToken ?? ""
-                        ])
-                    }
+            if serviceTerms == nil {
+                UserApi.shared.loginWithKakaoAccount {(oauthToken, error) in
+                    self.handleKakaoLoginResponse(call, oauthToken: oauthToken, error: error)
                 }
+            } else {
+                UserApi.shared.loginWithKakaoAccount(serviceTerms: serviceTerms, completion: {(oauthToken, error) in
+                    self.handleKakaoLoginResponse(call, oauthToken: oauthToken, error: error)
+                })
+            }
             
+        }
+    }
+    
+    private func handleKakaoLoginResponse(_ call: CAPPluginCall, oauthToken: OAuthToken?, error: Error?) -> Void {
+        if error != nil {
+            call.reject("error")
+        }
+        else {
+            call.resolve([
+                "accessToken": oauthToken?.accessToken ?? "",
+                "refreshToken": oauthToken?.refreshToken ?? ""
+            ])
         }
     }
     

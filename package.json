@@ -1,7 +1,7 @@
 {
   "name": "capacitor-kakao-plugin",
-  "version": "1.0.2",
-  "description": "capacitor kakao plugin",
+  "version": "1.1.0",
+  "description": "capacitor3 kakao plugin",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",

@@ -239,12 +239,23 @@ enum KakaoStatus {
 
 <br />
 
-### kakaoLogin(): Promise<{ value: string; }>
+### kakaoLogin({
+  serviceTerms?: string[]
+}): Promise<{ value: string; }>
 
 ---
 
 If user has kakaotalk app, `login with kakaotalk`. If not, `login with kakaoAccount`.
-And the return value(access_token) doesn't needed in general. Kakao SDK automatically manage access_token and refresh_token
+And the return value(access_token) doesn't needed in general. Kakao SDK automatically manage access_token and refresh_token.
+`serviceTerms` parameter is for [kakao sync](https://developers.kakao.com/docs/latest/ko/kakaosync/dynamic-terms). 
+
+<b>Parameter</b>
+
+```typescript
+{
+  serviceTerms?: string[]
+}
+```
 
 <b>Return</b>
 

@@ -40,42 +40,54 @@ class CapacitorKakao(var activity: AppCompatActivity) {
     }
 
     fun kakaoLogin(call: PluginCall) {
+        var serviceTermsParam = call.getArray("serviceTerms");
+        serviceTermsParam = if (serviceTermsParam === null || serviceTermsParam.length() === 0) null else serviceTermsParam;
+
         if (UserApiClient.instance.isKakaoTalkLoginAvailable(activity)) {
-            UserApiClient.instance
-                .loginWithKakaoTalk(
-                        activity
+            if (serviceTermsParam != null) {
+                UserApiClient.instance.loginWithKakaoTalk(
+                    activity,
+                    serviceTerms = serviceTermsParam.toList<String>()
                 ) { oAuthToken: OAuthToken?, error: Throwable? ->
-                    if (error != null) {
-                        Log.e(TAG, "login fail : ", error)
-                        call.reject(error.toString())
-                    } else if (oAuthToken != null) {
-                        Log.i(TAG, "login success : " + oAuthToken.accessToken)
-                        val ret = JSObject()
-                        ret.put("accessToken", oAuthToken.accessToken)
-                        ret.put("refreshToken", oAuthToken.refreshToken)
-                        call.resolve(ret)
-                    } else {
-                        call.reject("no_data")
-                    }
+                    handleKakaoLoginResponse(call, oAuthToken, error)
+                }    
+            } else {
+                UserApiClient.instance.loginWithKakaoTalk(
+                    activity
+                ) { oAuthToken: OAuthToken?, error: Throwable? ->
+                    handleKakaoLoginResponse(call, oAuthToken, error)
                 }
+            }
         } else {
-            UserApiClient.instance
-                .loginWithKakaoAccount(
-                        activity
+            if (serviceTermsParam != null) {
+                UserApiClient.instance.loginWithKakaoAccount(
+                    activity,
+                    serviceTerms = serviceTermsParam.toList<String>()
                 ) { oAuthToken: OAuthToken?, error: Throwable? ->
-                    if (error != null) {
-                        Log.e(TAG, "login fail : ", error)
-                        call.reject(error.toString())
-                    } else if (oAuthToken != null) {
-                        Log.i(TAG, "login success : " + oAuthToken.accessToken)
-                        val ret = JSObject()
-                        ret.put("accessToken", oAuthToken.accessToken)
-                        ret.put("refreshToken", oAuthToken.refreshToken)
-                        call.resolve(ret)
-                    } else {
-                        call.reject("no_data")
-                    }
+                    handleKakaoLoginResponse(call, oAuthToken, error)
                 }
+            } else {
+                UserApiClient.instance.loginWithKakaoAccount(
+                    activity
+                ) { oAuthToken: OAuthToken?, error: Throwable? ->
+                    handleKakaoLoginResponse(call, oAuthToken, error)
+                }
+            }
+        }
+    }
+
+    private fun handleKakaoLoginResponse(call: PluginCall, oAuthToken: OAuthToken?, error: Throwable?) {
+        if (error != null) {
+            Log.e(TAG, "login fail : ", error)
+            call.reject(error.toString())
+        } else if (oAuthToken != null) {
+            Log.i(TAG, "login success : " + oAuthToken.accessToken)
+            val ret = JSObject()
+            ret.put("accessToken", oAuthToken.accessToken)
+            ret.put("refreshToken", oAuthToken.refreshToken)
+            call.resolve(ret)
+        } else {
+            call.reject("no_data")
         }
     }
 
