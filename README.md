@@ -239,9 +239,7 @@ enum KakaoStatus {
 
 <br />
 
-### kakaoLogin({
-  serviceTerms?: string[]
-}): Promise<{ value: string; }>
+### kakaoLogin(options?): Promise<{ value: string; }>
 
 ---
 
