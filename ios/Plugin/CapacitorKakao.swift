@@ -1,12 +1,5 @@
-//
-//  RNKakaoLogins.swift
-//  RNKakaoLogins
-//
-//  Created by hyochan on 2021/03/18.
-//  Copyright © 2021 Facebook. All rights reserved.
-//
-
 import Foundation
+import Capacitor
 
 import KakaoSDKUser
 import KakaoSDKCommon
@@ -30,26 +23,214 @@ enum TokenStatus: String {
     case SUCCEED
 }
 
-@objc(RNKakaoLogins)
-class RNKakaoLogins: NSObject {
+@objc public class CapacitorKakao: NSObject {
 
-    public override init() {
-        let appKey: String? = Bundle.main.object(forInfoDictionaryKey: "KAKAO_APP_KEY") as? String
-        KakaoSDK.initSDK(appKey: appKey!)
+    @objc public func initializeKakao(_ call: CAPPluginCall) -> Void {
+        tokenAvailability { (status: TokenStatus) in
+            call.resolve([
+                "status": status.rawValue
+            ])
+        }
+    }
+
+    @objc public func kakaoLogin(_ call: CAPPluginCall) -> Void {
+        let serviceTerms = call.getArray("serviceTerms", String.self) ?? nil
+        // 카카오톡 설치 여부 확인
+        // if kakaotalk app exists, login with app. else, login with web
+        if (UserApi.isKakaoTalkLoginAvailable()) {
+            if serviceTerms == nil {
+                UserApi.shared.loginWithKakaoTalk {(oauthToken, error) in
+                    self.handleKakaoLoginResponse(call, oauthToken: oauthToken, error: error)
+                }
+            } else {
+                UserApi.shared.loginWithKakaoTalk(serviceTerms: serviceTerms, completion: {(oauthToken, error) in
+                    self.handleKakaoLoginResponse(call, oauthToken: oauthToken, error: error)
+                })
+            }
+        }
+        else{
+            if serviceTerms == nil {
+                UserApi.shared.loginWithKakaoAccount {(oauthToken, error) in
+                    self.handleKakaoLoginResponse(call, oauthToken: oauthToken, error: error)
+                }
+            } else {
+                UserApi.shared.loginWithKakaoAccount(serviceTerms: serviceTerms, completion: {(oauthToken, error) in
+                    self.handleKakaoLoginResponse(call, oauthToken: oauthToken, error: error)
+                })
+            }
+            
+        }
     }
     
-    @objc(initializeKakao:rejecter:)
-    func initializeKakao(_ resolve: @escaping RCTPromiseResolveBlock,
-                    rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
-        DispatchQueue.main.async {
-            self.tokenAvailability { (status: TokenStatus) in
-                resolve([
-                    "status": status.rawValue
-                ])
+    private func handleKakaoLoginResponse(_ call: CAPPluginCall, oauthToken: OAuthToken?, error: Error?) -> Void {
+        if error != nil {
+            call.reject("error")
+        }
+        else {
+            call.resolve([
+                "accessToken": oauthToken?.accessToken ?? "",
+                "refreshToken": oauthToken?.refreshToken ?? ""
+            ])
+        }
+    }
+    
+    @objc public func kakaoLogout(_ call: CAPPluginCall) -> Void {
+
+        UserApi.shared.logout {(error) in
+            if let error = error {
+                print(error)
+                call.reject("error")
+            }
+            else {
+                call.resolve()
             }
         }
     }
     
+    
+    
+    @objc public func kakaoUnlink(_ call: CAPPluginCall) -> Void {
+
+        UserApi.shared.unlink {(error) in
+            if let error = error {
+                print(error)
+                call.reject("error")
+            }
+            else {
+                call.resolve()
+            }
+        }
+    }
+    
+    
+    @objc public func sendLinkFeed(_ call: CAPPluginCall) -> Void {
+
+        let title = call.getString("title") ?? ""
+        let description = call.getString("description") ?? ""
+        let imageUrl = call.getString("imageUrl") ?? ""
+        let imageLinkUrl = call.getString("imageLinkUrl") ?? ""
+        let buttonTitle = call.getString("buttonTitle") ?? ""
+        let imageWidth: Int? = call.getInt("imageWidth")
+        let imageHeight: Int? = call.getInt("imageHeight")
+
+        
+        
+        let link = Link(webUrl: URL(string:imageLinkUrl),
+                        mobileWebUrl: URL(string:imageLinkUrl))
+
+        let button = Button(title: buttonTitle, link: link)
+        let content = Content(title: title,
+                              imageUrl: URL(string:imageUrl)!,
+                              imageWidth: imageWidth,
+                              imageHeight: imageHeight,
+                              description: description,
+                              link: link)
+        let feedTemplate = FeedTemplate(content: content, social: nil, buttons: [button])
+
+        //메시지 템플릿 encode
+        if let feedTemplateJsonData = (try? SdkJSONEncoder.custom.encode(feedTemplate)) {
+
+        //생성한 메시지 템플릿 객체를 jsonObject로 변환
+            if let templateJsonObject = SdkUtils.toJsonObject(feedTemplateJsonData) {
+                LinkApi.shared.defaultLink(templateObject:templateJsonObject) {(linkResult, error) in
+                    if let error = error {
+                        print(error)
+                        call.reject("error")
+                    }
+                    else {
+
+                        //do something
+                        guard let linkResult = linkResult else { return }
+                        UIApplication.shared.open(linkResult.url, options: [:], completionHandler: nil)
+                        
+                        call.resolve()
+                    }
+                }
+            }
+        }
+    }
+
+    @objc public func getUserInfo(_ call: CAPPluginCall) -> Void {
+        UserApi.shared.me() {(user, error) in
+            if let error = error {
+                print(error)
+                call.reject("me() failed.")
+            }
+            else {
+                print("me() success.")
+                call.resolve([
+                    "value": user?.toDictionary as Any
+                ])
+            }
+        }
+    }
+
+    @objc public func getFriendList(_ call: CAPPluginCall) -> Void {
+        let offset = call.getInt("offset")
+        let limit = call.getInt("limit")
+        var order = Order.Asc
+        if (call.getString("order")?.uppercased() == "DESC") {
+            order = Order.Desc
+        }
+        TalkApi.shared.friends (
+            offset:offset, limit:limit, order: order
+        ) {(friends, error) in
+            if let error = error {
+                print(error)
+                call.reject("getFriendList() failed.")
+            }
+            else {
+                print("getFriendList() success")
+                let friendList = friends?.toDictionary
+                call.resolve([
+                    "value": (friendList != nil) ? friendList!["elements"] as Any : [] as Any
+                ])
+            }
+        }
+    }
+
+    @objc public func loginWithNewScopes(_ call: CAPPluginCall) ->  Void {
+        var scopes = [String]()
+        guard let tobeAgreedScopes = call.getArray("scopes", String.self) else {
+            call.reject("scopes agree failed")
+            return
+        }
+        for scope in tobeAgreedScopes {
+            scopes.append(scope)
+        }
+            
+        if scopes.count == 0  {
+            call.resolve()
+            return
+        }
+
+        //필요한 scope으로 토큰갱신을 한다.
+        UserApi.shared.loginWithKakaoAccount(scopes: scopes) { (_, error) in
+            if let error = error {
+                print(error)
+                call.reject("scopes agree failed")
+            }
+            else {
+                call.resolve()
+            }
+
+        }
+    }
+
+    @objc public func getUserScopes(_ call: CAPPluginCall) -> Void {
+        UserApi.shared.scopes() { (scopeInfo, error) in
+            if error != nil {
+                call.reject("get kakao user scope failed : ")
+            }
+            else {
+                let scopeInfoDict = scopeInfo?.toDictionary
+                call.resolve([
+                    "value": (scopeInfoDict != nil) ? scopeInfoDict!["scopes"] as Any : [] as Any
+                ])
+            }
+        }
+    }
+
     private func tokenAvailability(completion: @escaping ((TokenStatus) -> Void)) -> Void {
         if (AuthApi.hasToken()) {
             UserApi.shared.accessTokenInfo { (_, error) in
@@ -70,236 +251,6 @@ class RNKakaoLogins: NSObject {
         }
         else {
             completion(TokenStatus.LOGIN_NEEDED)
-        }
-    }
-
-   @objc
-   static func requiresMainQueueSetup() -> Bool {
-     return true
-   }
-
-   @objc(isKakaoTalkLoginUrl:)
-   public static func isKakaoTalkLoginUrl(url:URL) -> Bool {
-
-       let appKey = try? KakaoSDK.shared.appKey();
-
-       if (appKey != nil) {
-           return AuthApi.isKakaoTalkLoginUrl(url)
-       }
-       return false
-   }
-
-    @objc(handleOpenUrl:)
-    public static func handleOpenUrl(url:URL) -> Bool {
-       return AuthController.handleOpenUrl(url: url)
-    }
-
-    @objc(login:resolver:rejecter:)
-    func login(_ serviceTerms: NSArray?, resolver resolve: @escaping RCTPromiseResolveBlock,
-               rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
-        DispatchQueue.main.async {
-            // 카카오톡 설치 여부 확인
-            // if kakaotalk app exists, login with app. else, login with web
-            if (UserApi.isKakaoTalkLoginAvailable()) {
-                if serviceTerms == nil {
-                    UserApi.shared.loginWithKakaoTalk {(oauthToken, error) in
-                        self.handleKakaoLoginResponse(resolve: resolve, reject: reject, oauthToken: oauthToken, error: error)
-                    }
-                } else {
-                    UserApi.shared.loginWithKakaoTalk(serviceTerms: serviceTerms as? [String], completion: {(oauthToken, error) in
-                        self.handleKakaoLoginResponse(resolve: resolve, reject: reject, oauthToken: oauthToken, error: error)
-                    })
-                }
-            }
-            else{
-                if serviceTerms == nil {
-                    UserApi.shared.loginWithKakaoAccount {(oauthToken, error) in
-                        self.handleKakaoLoginResponse(resolve: resolve, reject: reject, oauthToken: oauthToken, error: error)
-                    }
-                } else {
-                    UserApi.shared.loginWithKakaoAccount(serviceTerms: serviceTerms as? [String], completion: {(oauthToken, error) in
-                        self.handleKakaoLoginResponse(resolve: resolve, reject: reject, oauthToken: oauthToken, error: error)
-                    })
-                }
-            }
-        }
-    }
-    
-    @objc(loginWithNewScopes:resolver:rejecter:)
-    func loginWithNewScopes(_ scopes: NSArray, resolver resolve: @escaping RCTPromiseResolveBlock,
-                                         rejecter reject: @escaping RCTPromiseRejectBlock) ->  Void {
-        DispatchQueue.main.async {
-            if scopes.count == 0  {
-                resolve("empty scopes")
-                return
-            }
-            
-            var scopeParam = [String]()
-            for scope in scopes {
-                scopeParam.append(scope as! String)
-            }
-
-            print(scopeParam)
-            //필요한 scope으로 토큰갱신을 한다.
-            UserApi.shared.loginWithKakaoAccount(scopes: scopeParam) { (oauthToken, error) in
-                self.handleKakaoLoginResponse(resolve: resolve, reject: reject, oauthToken: oauthToken, error: error)
-            }
-        }
-    }
-    
-    private func handleKakaoLoginResponse(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock, oauthToken: OAuthToken?, error: Error?) -> Void {
-        if let error = error {
-            reject("RNKakaoLogins", error.localizedDescription, nil)
-        }
-        else {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss";
-            resolve([
-                "accessToken": oauthToken?.accessToken ?? "",
-                "refreshToken": oauthToken?.refreshToken ?? "" as Any,
-                "idToken": oauthToken?.idToken ?? "",
-                "accessTokenExpiresAt": dateFormatter.string(from: oauthToken!.expiredAt),
-                "refreshTokenExpiresAt": dateFormatter.string(from: oauthToken!.refreshTokenExpiredAt),
-                "scopes": oauthToken?.scopes ?? "",
-            ])
-        }
-    }
-
-//
-    @objc(logout:rejecter:)
-    func logout(_ resolve: @escaping RCTPromiseResolveBlock,
-               rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
-        DispatchQueue.main.async {
-            UserApi.shared.logout {(error) in
-                if let error = error {
-                    reject("RNKakaoLogins", error.localizedDescription, nil)
-                }
-                else {
-                    resolve("Successfully logged out")
-                }
-            }
-        }
-    }
-
-    @objc(unlink:rejecter:)
-    func unlink(_ resolve: @escaping RCTPromiseResolveBlock,
-               rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
-        DispatchQueue.main.async {
-            UserApi.shared.unlink {(error) in
-                if let error = error {
-                    reject("RNKakaoLogins", error.localizedDescription, nil)
-                }
-                else {
-                    resolve("Successfully unlinked")
-                }
-            }
-        }
-    }
-
-    @objc(getAccessToken:rejecter:)
-    func getAccessToken(_ resolve: @escaping RCTPromiseResolveBlock,
-               rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
-        DispatchQueue.main.async {
-            UserApi.shared.accessTokenInfo {(accessTokenInfo, error) in
-                if let error = error {
-                    reject("RNKakaoLogins", error.localizedDescription, nil)
-                }
-                else {
-                    resolve([
-                        "accessToken": TokenManager.manager.getToken()?.accessToken as Any,
-                        "expiresIn": accessTokenInfo?.expiresIn as Any,
-                    ])
-                }
-            }
-        }
-    }
-
-    @objc(getProfile:rejecter:)
-    func getProfile(_ resolve: @escaping RCTPromiseResolveBlock,
-               rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
-        DispatchQueue.main.async {
-            UserApi.shared.me() {(user, error) in
-                if let error = error {
-                    reject("RNKakaoLogins", error.localizedDescription, nil)
-                }
-                else {
-                    resolve([
-                        "id": user?.id as Any,
-                        "name": user?.kakaoAccount?.name as Any,
-                        "email": user?.kakaoAccount?.email as Any,
-                        "nickname": user?.kakaoAccount?.profile?.nickname as Any,
-                        "profileImageUrl": user?.kakaoAccount?.profile?.profileImageUrl?.absoluteString as Any,
-                        "thumbnailImageUrl": user?.kakaoAccount?.profile?.thumbnailImageUrl?.absoluteString as Any,
-                        "phoneNumber": user?.kakaoAccount?.phoneNumber as Any,
-                        "ageRange": user?.kakaoAccount?.ageRange?.rawValue as Any,
-                        "birthday": user?.kakaoAccount?.birthday as Any,
-                        "birthdayType": user?.kakaoAccount?.birthdayType as Any,
-                        "birthyear": user?.kakaoAccount?.birthyear as Any,
-                        "gender": user?.kakaoAccount?.gender?.rawValue as Any,
-                        "isEmailValid": user?.kakaoAccount?.isEmailValid as Any,
-                        "isEmailVerified": user?.kakaoAccount?.isEmailVerified as Any,
-                        "isKorean": user?.kakaoAccount?.isKorean as Any,
-                        "ageRangeNeedsAgreement": user?.kakaoAccount?.ageRangeNeedsAgreement as Any,
-                        "birthdayNeedsAgreement": user?.kakaoAccount?.birthdayNeedsAgreement as Any,
-                        "birthyearNeedsAgreement": user?.kakaoAccount?.birthyearNeedsAgreement as Any,
-                        "emailNeedsAgreement": user?.kakaoAccount?.emailNeedsAgreement as Any,
-                        "genderNeedsAgreement": user?.kakaoAccount?.genderNeedsAgreement as Any,
-                        "isKoreanNeedsAgreement": user?.kakaoAccount?.isKoreanNeedsAgreement as Any,
-                        "phoneNumberNeedsAgreement": user?.kakaoAccount?.phoneNumberNeedsAgreement as Any,
-                        "profileNeedsAgreement": user?.kakaoAccount?.profileNeedsAgreement as Any,
-                    ])
-                }
-            }
-        }
-    }
-    
-    @objc(sendLinkFeed:resolver:rejecter:)
-    func sendLinkFeed(_ data: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
-        DispatchQueue.main.async {
-            let title = data["title"] ?? ""
-            let description = data["description"] ?? ""
-            let imageUrl = data["imageUrl"] ?? ""
-            let imageLinkUrl = data["imageLinkUrl"] ?? ""
-            let buttonTitle = data["buttonTitle"] ?? ""
-            let imageWidth: Int? = data["imageWidth"] as! Int?
-            let imageHeight: Int? = data["imageHeight"] as! Int?
-
-                
-                
-            let link = Link(webUrl: URL(string:imageLinkUrl as! String),
-                            mobileWebUrl: URL(string:imageLinkUrl as! String))
-
-            let button = Button(title: buttonTitle as! String, link: link)
-            let content = Content(title: title as! String,
-                                  imageUrl: URL(string:imageUrl as! String)!,
-                                  imageWidth: imageWidth,
-                                  imageHeight: imageHeight,
-                                  description: description as? String,
-                                  link: link)
-            let feedTemplate = FeedTemplate(content: content, social: nil, buttons: [button])
-
-            //메시지 템플릿 encode
-            if let feedTemplateJsonData = (try? SdkJSONEncoder.custom.encode(feedTemplate)) {
-
-            //생성한 메시지 템플릿 객체를 jsonObject로 변환
-                if let templateJsonObject = SdkUtils.toJsonObject(feedTemplateJsonData) {
-                    LinkApi.shared.defaultLink(templateObject:templateJsonObject) {(linkResult, error) in
-                        if let error = error {
-                            print(error)
-                            reject("RNKakaoLogins", error.localizedDescription, nil)
-                        }
-                        else {
-
-                            //do something
-                            guard let linkResult = linkResult else { return }
-                            UIApplication.shared.open(linkResult.url, options: [:], completionHandler: nil)
-                            
-                            resolve("succeed")
-                        }
-                    }
-                }
-            }
         }
     }
 }
