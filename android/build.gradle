@@ -63,9 +63,9 @@ dependencies {
     testImplementation "junit:junit:$junitVersion"
 
     //  카카오 sdk
-    implementation "com.kakao.sdk:v2-user:2.5.2"
-    implementation "com.kakao.sdk:v2-link:2.5.2"
-    implementation "com.kakao.sdk:v2-talk:2.5.2"
+    implementation "com.kakao.sdk:v2-user:2.11.1" // 카카오 로그인
+    implementation "com.kakao.sdk:v2-talk:2.11.1" // 친구, 메시지(카카오톡)
+    implementation "com.kakao.sdk:v2-share:2.11.1" // 메시지(카카오톡 공유)
 
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"

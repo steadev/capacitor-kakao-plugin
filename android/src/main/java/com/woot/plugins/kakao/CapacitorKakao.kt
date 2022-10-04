@@ -8,8 +8,9 @@ import com.getcapacitor.PluginCall
 import com.kakao.sdk.user.UserApiClient
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.template.model.FeedTemplate
-import com.kakao.sdk.link.LinkClient
-import com.kakao.sdk.link.model.LinkResult
+import com.kakao.sdk.share.ShareClient
+import com.kakao.sdk.share.WebSharerClient
+import com.kakao.sdk.share.model.SharingResult
 import com.kakao.sdk.template.model.Button
 import com.kakao.sdk.template.model.Content
 import com.kakao.sdk.template.model.Link
@@ -127,18 +128,50 @@ class CapacitorKakao(var activity: AppCompatActivity) {
         val buttons = ArrayList<Button>()
         buttons.add(Button(buttonTitle, link))
         val feed = FeedTemplate(content, null, buttons)
-        LinkClient.instance
-            .defaultTemplate(
-                    activity,
-                    feed
-            ) { linkResult: LinkResult?, error: Throwable? ->
-                if (error != null) {
-                    call.reject("kakao link failed: " + error.toString())
-                } else if (linkResult != null) {
-                    activity.startActivity(linkResult.intent)
-                }
-                call.resolve()
+        if (ShareClient.instance.isKakaoTalkSharingAvailable(reactContext)) {
+            reactContext.currentActivity?.let {
+                ShareClient.instance
+                    .shareDefault(
+                        it,
+                        feed
+                    ) { shareResult: SharingResult?, error: Throwable? ->
+                        if (error != null) {
+                            call.reject("kakao link failed")
+                        } else if (shareResult != null) {
+                            it.startActivity(shareResult.intent)
+                        }
+                        call.resolve()
+                    }
             }
+        } else {
+            reactContext.currentActivity?.let {
+                // 카카오톡 미설치: 웹 공유 사용 권장
+                // 웹 공유 예시 코드
+                val sharerUrl = WebSharerClient.instance.makeDefaultUrl(feed)
+                var shareResult = true
+                // CustomTabs으로 웹 브라우저 열기
+
+                // 1. CustomTabsServiceConnection 지원 브라우저 열기
+                // ex) Chrome, 삼성 인터넷, FireFox, 웨일 등
+                try {
+                    KakaoCustomTabsClient.openWithDefault(it, sharerUrl)
+                    call.resolve()
+                } catch(e: UnsupportedOperationException) {
+                    // CustomTabsServiceConnection 지원 브라우저가 없을 때 예외처리
+                    shareResult = false
+                }
+
+                // 2. CustomTabsServiceConnection 미지원 브라우저 열기
+                // ex) 다음, 네이버 등
+                try {
+                    KakaoCustomTabsClient.open(it, sharerUrl)
+                    call.resolve()
+                } catch (e: ActivityNotFoundException) {
+                    // 디바이스에 설치된 인터넷 브라우저가 없을 때 예외처리
+                    shareResult = false
+                }
+            }
+        }
     }
 
     fun getUserInfo(call: PluginCall) {

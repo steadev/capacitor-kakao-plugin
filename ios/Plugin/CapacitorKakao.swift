@@ -3,7 +3,7 @@ import Capacitor
 
 import KakaoSDKUser
 import KakaoSDKCommon
-import KakaoSDKLink
+import KakaoSDKShare
 import KakaoSDKTemplate
 import KakaoSDKAuth
 import KakaoSDKTalk
@@ -132,19 +132,35 @@ enum TokenStatus: String {
 
         //생성한 메시지 템플릿 객체를 jsonObject로 변환
             if let templateJsonObject = SdkUtils.toJsonObject(feedTemplateJsonData) {
-                LinkApi.shared.defaultLink(templateObject:templateJsonObject) {(linkResult, error) in
-                    if let error = error {
-                        print(error)
-                        call.reject("error")
-                    }
-                    else {
+                if ShareApi.isKakaoTalkSharingAvailable() {
+                    ShareApi.shared.shareDefault(templateObject:templateJsonObject) {(linkResult, error) in
+                        if let error = error {
+                            print(error)
+                            call.reject("error")
+                        }
+                        else {
 
-                        //do something
-                        guard let linkResult = linkResult else { return }
-                        UIApplication.shared.open(linkResult.url, options: [:], completionHandler: nil)
-                        
-                        call.resolve()
+                            //do something
+                            guard let linkResult = linkResult else { return }
+                            UIApplication.shared.open(linkResult.url, options: [:], completionHandler: nil)
+                            
+                            call.resolve()
+                        }
                     }
+                } else {
+                    call.reject("not implemented")
+                    // 카카오톡 미설치: 웹 공유 사용 권장
+                    // Custom WebView 또는 디폴트 브라우져 사용 가능
+                    // 웹 공유 예시 코드
+//                        if let url = ShareApi.shared.makeDefaultUrl(templateObject: templateJsonObject) {
+//
+//                            self.safariViewController = SFSafariViewController(url: url)
+//                            self.safariViewController?.modalTransitionStyle = .crossDissolve
+//                            self.safariViewController?.modalPresentationStyle = .overCurrentContext
+//                            self.present(self.safariViewController!, animated: true) {
+//                                print("웹 present success")
+//                            }
+//                        }
                 }
             }
         }

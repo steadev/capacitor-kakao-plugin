@@ -11,7 +11,7 @@ def capacitor_pods
   pod 'KakaoSDKUser'  # 카카오 로그인, 사용자 관리
   pod 'KakaoSDKTalk'  # 친구, 메시지(카카오톡)
   pod 'KakaoSDKStory'  # 카카오스토리 
-  pod 'KakaoSDKLink'  # 메시지(카카오링크)
+  pod 'KakaoSDKShare'  # 메시지(카카오링크)
   pod 'KakaoSDKTemplate'  # 메시지 템플릿 
 end
 
