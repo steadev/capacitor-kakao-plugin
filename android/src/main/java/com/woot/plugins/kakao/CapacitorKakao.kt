@@ -1,5 +1,6 @@
 package com.woot.plugins.kakao
 
+import android.content.ActivityNotFoundException
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.getcapacitor.JSArray
@@ -18,6 +19,7 @@ import java.util.ArrayList
 import com.google.gson.Gson
 import com.kakao.sdk.auth.AuthApiClient
 import com.kakao.sdk.common.model.KakaoSdkError
+import com.kakao.sdk.common.util.KakaoCustomTabsClient
 import com.kakao.sdk.talk.TalkApiClient
 import com.kakao.sdk.talk.model.Order
 import org.json.JSONArray
@@ -127,49 +129,45 @@ class CapacitorKakao(var activity: AppCompatActivity) {
         val content = Content(title, imageUrl, link, description, imageWidth, imageHeight)
         val buttons = ArrayList<Button>()
         buttons.add(Button(buttonTitle, link))
-        val feed = FeedTemplate(content, null, buttons)
-        if (ShareClient.instance.isKakaoTalkSharingAvailable(reactContext)) {
-            reactContext.currentActivity?.let {
-                ShareClient.instance
-                    .shareDefault(
-                        it,
-                        feed
-                    ) { shareResult: SharingResult?, error: Throwable? ->
-                        if (error != null) {
-                            call.reject("kakao link failed")
-                        } else if (shareResult != null) {
-                            it.startActivity(shareResult.intent)
-                        }
-                        call.resolve()
+        val feed = FeedTemplate(content, null, null, buttons)
+        if (ShareClient.instance.isKakaoTalkSharingAvailable(activity)) {
+            ShareClient.instance
+                .shareDefault(
+                    activity,
+                    feed
+                ) { shareResult: SharingResult?, error: Throwable? ->
+                    if (error != null) {
+                        call.reject("kakao link failed")
+                    } else if (shareResult != null) {
+                        activity.startActivity(shareResult.intent)
                     }
-            }
+                    call.resolve()
+                }
         } else {
-            reactContext.currentActivity?.let {
-                // 카카오톡 미설치: 웹 공유 사용 권장
-                // 웹 공유 예시 코드
-                val sharerUrl = WebSharerClient.instance.makeDefaultUrl(feed)
-                var shareResult = true
-                // CustomTabs으로 웹 브라우저 열기
+            // 카카오톡 미설치: 웹 공유 사용 권장
+            // 웹 공유 예시 코드
+            val sharerUrl = WebSharerClient.instance.makeDefaultUrl(feed)
+            var shareResult = true
+            // CustomTabs으로 웹 브라우저 열기
 
-                // 1. CustomTabsServiceConnection 지원 브라우저 열기
-                // ex) Chrome, 삼성 인터넷, FireFox, 웨일 등
-                try {
-                    KakaoCustomTabsClient.openWithDefault(it, sharerUrl)
-                    call.resolve()
-                } catch(e: UnsupportedOperationException) {
-                    // CustomTabsServiceConnection 지원 브라우저가 없을 때 예외처리
-                    shareResult = false
-                }
+            // 1. CustomTabsServiceConnection 지원 브라우저 열기
+            // ex) Chrome, 삼성 인터넷, FireFox, 웨일 등
+            try {
+                KakaoCustomTabsClient.openWithDefault(activity, sharerUrl)
+                call.resolve()
+            } catch(e: UnsupportedOperationException) {
+                // CustomTabsServiceConnection 지원 브라우저가 없을 때 예외처리
+                shareResult = false
+            }
 
-                // 2. CustomTabsServiceConnection 미지원 브라우저 열기
-                // ex) 다음, 네이버 등
-                try {
-                    KakaoCustomTabsClient.open(it, sharerUrl)
-                    call.resolve()
-                } catch (e: ActivityNotFoundException) {
-                    // 디바이스에 설치된 인터넷 브라우저가 없을 때 예외처리
-                    shareResult = false
-                }
+            // 2. CustomTabsServiceConnection 미지원 브라우저 열기
+            // ex) 다음, 네이버 등
+            try {
+                KakaoCustomTabsClient.open(activity, sharerUrl)
+                call.resolve()
+            } catch (e: ActivityNotFoundException) {
+                // 디바이스에 설치된 인터넷 브라우저가 없을 때 예외처리
+                shareResult = false
             }
         }
     }
