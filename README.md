@@ -199,7 +199,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 - `kakaoLogin()`
 - `kakaoLogout()`
 - `kakaoUnlink()`
-- `sendLinkFeed(options)`
+- `shareDefault(options)`
 - `getUserInfo()`
 - `getFriendList(options)`
 - `loginWithNewScopes(scopes)`
@@ -288,7 +288,7 @@ This function is called to disconnect the app from the user.
 
 <br />
 
-### sendLinkFeed(options): Promise<void>
+### shareDefault(options): Promise<void>
 
 ---
 

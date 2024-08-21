@@ -116,7 +116,7 @@ class CapacitorKakao(var activity: AppCompatActivity) {
             }
     }
 
-    fun sendLinkFeed(call: PluginCall) {
+    fun shareDefault(call: PluginCall) {
         val imageLinkUrl = call.getString("imageLinkUrl")
         val imageUrl: String = if (call.getString("imageUrl") === null) "" else call.getString("imageUrl")!!
         val title: String = if (call.getString("title") === null) "" else call.getString("title")!!

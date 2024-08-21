@@ -2,14 +2,21 @@ import { WebPlugin } from '@capacitor/core';
 import camelCase from 'lodash.camelcase';
 import snake_case from 'lodash.snakecase';
 import * as Kakao from './assets/kakao-sdk';
-import type { CapacitorKakaoPlugin, KakaoFriendOption, KakaoScope, KakaoToken } from './definitions';
+import type {
+  CapacitorKakaoPlugin,
+  KakaoFriendOption,
+  KakaoScope,
+  KakaoToken,
+} from './definitions';
 
 const KakaoSdk: any = Kakao;
 
-export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin {
+export class CapacitorKakaoWeb
+  extends WebPlugin
+  implements CapacitorKakaoPlugin {
   webKey: any;
 
-  initializeKakao(options: { appKey: string, webKey: string }) {
+  initializeKakao(options: { appKey: string; webKey: string }) {
     return new Promise<void>((resolve, reject) => {
       if (options.webKey === undefined) {
         reject();
@@ -30,7 +37,9 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
       }
       KakaoSdk.Auth.login({
         success: (authObj: any) => {
-          const { accessToken, refreshToken } = ResponseAdapter.adapt(authObj);
+          const { accessToken, refreshToken } = ResponseAdapter.adapt(
+            authObj,
+          ) as { accessToken: string; refreshToken: string };
           this.setAccessToken(accessToken);
           resolve({ accessToken, refreshToken });
         },
@@ -76,7 +85,7 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
   }
 
   //message
-  sendLinkFeed(options: {
+  shareDefault(options: {
     title: string;
     description: string;
     imageUrl: string;
@@ -125,9 +134,9 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
         },
         fail: (error: any) => {
           reject(error);
-        }
+        },
       });
-    })
+    });
   }
   async getFriendList(options?: KakaoFriendOption): Promise<{ value: any }> {
     return new Promise((resolve, reject) => {
@@ -143,9 +152,9 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
         },
         fail: (error: any) => {
           reject(error);
-        }
+        },
       });
-    })
+    });
   }
 
   async loginWithNewScopes(scopes?: string[]): Promise<void> {
@@ -156,7 +165,9 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
       KakaoSdk.Auth.login({
         scope: scopes ? scopes.join(',') : undefined,
         success: (authObj: any) => {
-          const { accessToken } = ResponseAdapter.adapt(authObj);
+          const { accessToken } = ResponseAdapter.adapt(authObj) as {
+            accessToken: string;
+          };
           this.setAccessToken(accessToken);
           resolve();
         },
@@ -168,16 +179,18 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
     });
   }
 
-  async getUserScopes(): Promise<{ value: KakaoScope[]}> {
+  async getUserScopes(): Promise<{ value: KakaoScope[] }> {
     return new Promise((resolve, reject) => {
       KakaoSdk.API.request({
         url: '/v2/user/scopes',
         success: (result: any) => {
-          resolve({ value: ResponseAdapter.adapt(result.scopes) as KakaoScope[] });
+          resolve({
+            value: ResponseAdapter.adapt(result.scopes) as KakaoScope[],
+          });
         },
         fail: (error: any) => {
           reject(error);
-        }
+        },
       });
     });
   }
@@ -190,8 +203,8 @@ export class CapacitorKakaoWeb extends WebPlugin implements CapacitorKakaoPlugin
 const isObject = (value: any): boolean => {
   const type = typeof value;
 
-  return !!value && (type === 'object');
-}
+  return !!value && type === 'object';
+};
 
 /**
  * JSON 형식의 데이터를 snake_case -> camelCase 로 전환해주는 어댑터입니다.
@@ -199,7 +212,9 @@ const isObject = (value: any): boolean => {
 export class ResponseAdapter {
   private static transform<T, V>(targetObject: T | any | object): V | any {
     if (Array.isArray(targetObject)) {
-      return (targetObject as T[]).map(value => this.transform<T, V>(value)) as any;
+      return (targetObject as T[]).map(value =>
+        this.transform<T, V>(value),
+      ) as any;
     } else if (!isObject(targetObject)) {
       return targetObject;
     }
@@ -211,7 +226,7 @@ export class ResponseAdapter {
       const value = targetObject[key];
       const transformedKey = camelCase(key);
 
-      if (Array.isArray((value))) {
+      if (Array.isArray(value)) {
         transformed[transformedKey] = value.map(v => this.transform(v));
       } else if (isObject(value)) {
         transformed[transformedKey] = this.transform(value);
@@ -234,7 +249,9 @@ export class ResponseAdapter {
 export class RequestAdapter {
   private static transform<T, V>(targetObject: T | any | object): V | any {
     if (Array.isArray(targetObject)) {
-      return (targetObject as T[]).map(value => this.transform<T, V>(value)) as any;
+      return (targetObject as T[]).map(value =>
+        this.transform<T, V>(value),
+      ) as any;
     } else if (!isObject(targetObject)) {
       return targetObject;
     }
@@ -246,7 +263,7 @@ export class RequestAdapter {
       const value = targetObject[key];
       const transformedKey = snake_case(key);
 
-      if (Array.isArray((value))) {
+      if (Array.isArray(value)) {
         transformed[transformedKey] = value.map(v => this.transform(v));
       } else if (isObject(value)) {
         transformed[transformedKey] = this.transform(value);
