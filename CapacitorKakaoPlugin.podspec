@@ -1,7 +1,7 @@
 require 'json'
 
 package = JSON.parse(File.read(File.join(__dir__, 'package.json')))
-kakao_sdk_version = "2.20.4"
+kakao_sdk_version = "2.22.5"
 
 Pod::Spec.new do |s|
   s.name = 'CapacitorKakaoPlugin'
