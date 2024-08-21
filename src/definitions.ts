@@ -13,6 +13,12 @@ export interface KakaoScope {
   using: boolean;
 }
 
+export enum KakaoOAuthTokenStatus {
+  LOGIN_NEEDED = 'LOGIN_NEEDED',
+  ERROR = 'ERROR',
+  SUCCEED = 'SUCCEED',
+}
+
 export interface KakaoToken {
   accessToken: string;
   refreshToken: string;
@@ -20,7 +26,10 @@ export interface KakaoToken {
 
 export interface CapacitorKakaoPlugin {
   /** initialize only for web. */
-  initializeKakao(options: { appKey: string; webKey: string }): Promise<void>;
+  initializeKakao(options: {
+    appKey: string;
+    webKey: string;
+  }): Promise<{ status: KakaoOAuthTokenStatus }>;
   /** kakao login */
   kakaoLogin(): Promise<KakaoToken>;
   /** kakao logout */

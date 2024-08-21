@@ -5,7 +5,7 @@ Kakao Plugin for Capacitor6
 ## Updates
 
 - 2024.08.21 support Capacitor 6
-- 2024.08.21 update Kakao SDK version to 2.20.4
+- 2024.08.21 update Kakao SDK version to 2.20.4(android), 2.22.5(ios)
 - 2024.08.21 change method sendLinkFeed to shareDefault
 - 2022.10.04 update Kakao SDK version to 2.11.1
 
@@ -107,10 +107,7 @@ public class GlobalApplication extends Application {
   @Override
   public void onCreate() {
     super.onCreate();
-    CapacitorKakaoLoginPlugin.initKakaoSdk(
-      this,
-      getString(R.string.kakao_app_key)
-    );
+    CapacitorKakaoPlugin.initKakaoSdk(this, getString(R.string.kakao_app_key));
   }
 }
 
@@ -231,10 +228,10 @@ In case of app, it returns `KakaoStatus` which notice kakao token status.
 
 ```typescript
 {
-  status: KakaoStatus;
+  status: KakaoOAuthTokenStatus;
 }
 
-enum KakaoStatus {
+enum KakaoOAuthTokenStatus {
   LOGIN_NEEDED = 'LOGIN_NEEDED',
   ERROR = 'ERROR',
   SUCCEED = 'SUCCEED',
