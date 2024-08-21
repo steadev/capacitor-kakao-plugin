@@ -1,9 +1,12 @@
 # capacitor-kakao-plugin
 
-Kakao Plugin for Capacitor3
+Kakao Plugin for Capacitor6
 
 ## Updates
 
+- 2024.08.21 support Capacitor 6
+- 2024.08.21 update Kakao SDK version to 2.20.4
+- 2024.08.21 change method sendLinkFeed to shareDefault
 - 2022.10.04 update Kakao SDK version to 2.11.1
 
 ## Provided Functions
