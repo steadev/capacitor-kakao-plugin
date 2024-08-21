@@ -20,7 +20,7 @@ export interface KakaoToken {
 
 export interface CapacitorKakaoPlugin {
   /** initialize only for web. */
-  initializeKakao(options: { appKey: string; webKey: string; }): Promise<void>;
+  initializeKakao(options: { appKey: string; webKey: string }): Promise<void>;
   /** kakao login */
   kakaoLogin(): Promise<KakaoToken>;
   /** kakao logout */
@@ -28,7 +28,7 @@ export interface CapacitorKakaoPlugin {
   /** disconnect link with app */
   kakaoUnlink(): Promise<void>;
   /** send kakao link (only default kakao link) */
-  sendLinkFeed(options: {
+  shareDefault(options: {
     title: string;
     description: string;
     imageUrl: string;

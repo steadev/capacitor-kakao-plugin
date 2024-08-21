@@ -8,7 +8,7 @@ CAP_PLUGIN(CapacitorKakaoPlugin, "CapacitorKakao",
            CAP_PLUGIN_METHOD(kakaoLogin, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(kakaoLogout, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(kakaoUnlink, CAPPluginReturnPromise);
-           CAP_PLUGIN_METHOD(sendLinkFeed, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(shareDefault, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(getUserInfo, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(getFriendList, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(loginWithNewScopes, CAPPluginReturnPromise);

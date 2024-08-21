@@ -35,9 +35,9 @@ public class CapacitorKakaoPlugin: CAPPlugin {
         }
     }
     
-    @objc func sendLinkFeed(_ call: CAPPluginCall) {
+    @objc func shareDefault(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
-            self.implementation.sendLinkFeed(call)
+            self.implementation.shareDefault(call)
         }
     }
 

@@ -103,7 +103,7 @@ enum TokenStatus: String {
     }
     
     
-    @objc public func sendLinkFeed(_ call: CAPPluginCall) -> Void {
+    @objc public func shareDefault(_ call: CAPPluginCall) -> Void {
 
         let title = call.getString("title") ?? ""
         let description = call.getString("description") ?? ""

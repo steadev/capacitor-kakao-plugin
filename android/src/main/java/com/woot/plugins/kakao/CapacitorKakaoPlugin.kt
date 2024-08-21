@@ -37,8 +37,8 @@ class CapacitorKakaoPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun sendLinkFeed(call: PluginCall) {
-        implementation.sendLinkFeed(call)
+    fun shareDefault(call: PluginCall) {
+        implementation.shareDefault(call)
     }
 
     @PluginMethod
