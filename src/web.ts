@@ -35,10 +35,13 @@ export class CapacitorKakaoWeb
 
   //웹 카카오 로그인
   kakaoWebLogin(options: { redirectUri: string; scopes?: string[] }): void {
-    KakaoSdk.Auth.authorize({
+    const params: { redirectUri: string; scope?: string } = {
       redirectUri: options.redirectUri,
-      scopes: options.scopes ? options.scopes.join(',') : undefined,
-    });
+    };
+    if (Array.isArray(options.scopes)) {
+      params.scope = options.scopes.join(',');
+    }
+    KakaoSdk.Auth.authorize(params);
   }
 
   kakaoLogin(): Promise<KakaoToken> {
