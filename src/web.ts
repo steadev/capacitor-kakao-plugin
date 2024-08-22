@@ -28,7 +28,7 @@ export class CapacitorKakaoWeb
       if (this.webKey === undefined) {
         this.webKey = options.webKey;
       }
-      Kakao.init(this.webKey);
+      KakaoSdk.init(this.webKey);
       resolve({ status: KakaoOAuthTokenStatus.SUCCEED });
     });
   }
@@ -102,7 +102,7 @@ export class CapacitorKakaoWeb
       if (!this.webKey) {
         reject('kakao_sdk_not_initialized');
       }
-      KakaoSdk.Link.sendDefault({
+      KakaoSdk.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: options.title,
