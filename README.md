@@ -196,6 +196,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 ## APIs
 
 - `initializeKakao(options)`
+- `kakaoWebLogin()`
 - `kakaoLogin()`
 - `kakaoLogout()`
 - `kakaoUnlink()`
@@ -235,6 +236,35 @@ enum KakaoOAuthTokenStatus {
   LOGIN_NEEDED = 'LOGIN_NEEDED',
   ERROR = 'ERROR',
   SUCCEED = 'SUCCEED',
+}
+```
+
+<br />
+
+### kakaoWebLogin(options: {redirectUrl: string; scopes?: string[]}): Promise<{ value: string; }>
+
+---
+
+Only for web login. You should read [kakao docs](https://developers.kakao.com/docs/latest/ko/kakaologin/js)
+
+<b>Parameter</b>
+
+```typescript
+{
+  serviceTerms?: string[]
+}
+```
+
+<b>Return</b>
+
+```typescript
+{
+  accessToken: {
+    kakao_access_token;
+  }
+  refreshToken: {
+    kakao_refresh_token;
+  }
 }
 ```
 
