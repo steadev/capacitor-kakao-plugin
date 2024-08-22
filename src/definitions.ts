@@ -30,6 +30,8 @@ export interface CapacitorKakaoPlugin {
     appKey: string;
     webKey: string;
   }): Promise<{ status: KakaoOAuthTokenStatus }>;
+  /** kakao web login */
+  kakaoWebLogin(options: { redirectUri: string; scopes?: string[] }): void;
   /** kakao login */
   kakaoLogin(): Promise<KakaoToken>;
   /** kakao logout */

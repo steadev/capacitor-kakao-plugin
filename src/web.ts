@@ -34,24 +34,16 @@ export class CapacitorKakaoWeb
   }
 
   //웹 카카오 로그인
-  kakaoLogin() {
-    return new Promise<KakaoToken>((resolve, reject) => {
-      if (!this.webKey) {
-        reject('kakao_sdk_not_initialized');
-      }
-      KakaoSdk.Auth.login({
-        success: (authObj: any) => {
-          const { accessToken, refreshToken } = ResponseAdapter.adapt(
-            authObj,
-          ) as { accessToken: string; refreshToken: string };
-          this.setAccessToken(accessToken);
-          resolve({ accessToken, refreshToken });
-        },
-        fail: (err: any) => {
-          console.error(err);
-          reject(err);
-        },
-      });
+  kakaoWebLogin(options: { redirectUri: string; scopes?: string[] }): void {
+    KakaoSdk.Auth.authorize({
+      redirectUri: options.redirectUri,
+      scopes: options.scopes ? options.scopes.join(',') : undefined,
+    });
+  }
+
+  kakaoLogin(): Promise<KakaoToken> {
+    return new Promise<KakaoToken>((_, reject) => {
+      reject('not_supported');
     });
   }
 
