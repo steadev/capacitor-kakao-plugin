@@ -35,7 +35,7 @@ npx cap sync
 
 ```xml
 <!-- AndroidManifest.xml -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="io.ionic.starter">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
   ...
   <!-- For Kakao Link (only if targeting Android 11) -->
 + <queries>
@@ -57,7 +57,7 @@ npx cap sync
 +           <category android:name="android.intent.category.DEFAULT" />
 +           <category android:name="android.intent.category.BROWSABLE" />
 +           <data android:host="oauth"
-+                   android:scheme="kakao{NATIVE_APP_KEY}" />
++                   android:scheme="@string/kakao_scheme" />
 +       </intent-filter>
 +   </activity>
     <activity
